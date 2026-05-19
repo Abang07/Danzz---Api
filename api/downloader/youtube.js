@@ -1,33 +1,27 @@
 const { exec } = require('child_process')
 const { promisify } = require('util')
+const fs = require('fs')
+const path = require('path')
 
 const execAsync = promisify(exec)
 
+const YTDLP = '/usr/local/bin/yt-dlp'
+const PYTHON = '/usr/bin/python3'
+
 async function downloadYoutubeYtdlp(videoUrl) {
   try {
-    const { stdout } = await execAsync(`yt-dlp --dump-json --no-playlist "${videoUrl}"`)
+    const { stdout } = await execAsync(`${PYTHON} ${YTDLP} --dump-json --no-playlist "${videoUrl}"`)
     const data = JSON.parse(stdout)
 
-    const formats = data.formats || []
+    const tmpFile = path.join('/tmp', `audio_${Date.now()}.m4a`)
 
-    // Filter format yang ada URL-nya
-    const downloads = formats
-      .filter(f => f.url && (f.ext === 'mp4' || f.ext === 'webm' || f.acodec !== 'none'))
-      .map(f => ({
-        label: f.height ? `${f.ext.toUpperCase()} ${f.height}p` : `${f.ext.toUpperCase()} (audio)`,
-        url: f.url,
-        itag: f.format_id,
-        mime: f.ext,
-        filesize: f.filesize || null,
-        hasVideo: f.vcodec !== 'none',
-        hasAudio: f.acodec !== 'none',
-      }))
-      // Urutkan: video dulu, audio di bawah
-      .sort((a, b) => {
-        if (a.hasVideo && !b.hasVideo) return -1
-        if (!a.hasVideo && b.hasVideo) return 1
-        return 0
-      })
+    await execAsync(`${PYTHON} ${YTDLP} -f "140/bestaudio[ext=m4a]/bestaudio" -o "${tmpFile}" --no-playlist "${videoUrl}"`)
+
+    const fileBuffer = fs.readFileSync(tmpFile)
+    const base64 = fileBuffer.toString('base64')
+    const filesize = fs.statSync(tmpFile).size
+
+    fs.unlinkSync(tmpFile)
 
     return {
       title: data.title,
@@ -38,7 +32,9 @@ async function downloadYoutubeYtdlp(videoUrl) {
         subscribers: data.channel_follower_count || null,
       },
       duration: data.duration_string,
-      downloads,
+      filesize,
+      mime: 'm4a',
+      base64,
     }
   } catch (err) {
     throw new Error(`yt-dlp error: ${err.message}`)
