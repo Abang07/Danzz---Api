@@ -378,11 +378,11 @@ footer span{color:var(--ac)}
           <div class="ep-head">
             <div class="ep-top">
               <div class="method" style="background:rgba(255,79,155,.1);color:var(--ac3);border-color:rgba(255,79,155,.18)">GET</div>
-              <div class="ep-path">/api/maker/bratvid</div>
+              <div class="ep-path">/api/maker/brat-video</div>
             </div>
             <div class="ep-desc">Generate video brat-style dari teks. Langsung return video MP4.</div>
             <div class="ep-btns">
-              <button class="btn-copy-ep" style="background:rgba(255,79,155,.07);border-color:rgba(255,79,155,.2);color:var(--ac3)" data-path="/api/maker/bratvid?text=">Salin URL</button>
+              <button class="btn-copy-ep" style="background:rgba(255,79,155,.07);border-color:rgba(255,79,155,.2);color:var(--ac3)" data-path="/api/maker/brat-video?text=">Salin URL</button>
               <button class="btn-try" style="background:var(--ac3);color:#fff">&#9654; Coba</button>
             </div>
           </div>
@@ -390,7 +390,7 @@ footer span{color:var(--ac)}
             <div class="tester-label">Parameter: text</div>
             <div class="input-row">
               <input class="tester-input" style="--focus-color:var(--ac3)" id="input-bratvid" type="text" placeholder="Just friend ygy"/>
-              <button class="btn-send" style="background:var(--ac3);color:#fff" id="send-bratvid" data-id="bratvid" data-param="text" data-endpoint="/api/maker/bratvid?text=">Kirim</button>
+              <button class="btn-send" style="background:var(--ac3);color:#fff" id="send-bratvid" data-id="bratvid" data-param="text" data-endpoint="/api/maker/brat-video?text=">Kirim</button>
             </div>
             <div class="loading" id="loading-bratvid"><div class="spinner" style="border-top-color:var(--ac3)"></div> Generating video...</div>
             <div class="result-label" id="rlabel-bratvid">Response</div>
@@ -832,7 +832,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Send request
   var imageEndpoints = ['brat', 'removebg', 'iqc'];
-  var videoEndpoints = ['hd-video', 'bratvid'];
+  var videoEndpoints = ['hd-video', 'brat-video'];
 
   function sendReq(id) {
     var sb  = document.getElementById('send-' + id);
