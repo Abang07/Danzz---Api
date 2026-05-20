@@ -9,7 +9,7 @@ const fs = require('fs')
 const path = require('path')
 const os = require('os')
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyAmTFA9sBiLr74nqxodixxeUPuErCsoMGM'
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyD-auSvNXg7cvuENCIMmNOxQQ_lvGejdl8'
 
 async function downloadImageToTemp(imageUrl) {
   const res = await fetch(imageUrl)
