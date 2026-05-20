@@ -12,7 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "@canvas-fonts/arial": "^1.0.4",
-    "@google/generative-ai": "^0.24.1",
+    "@google/genai": "^2.4.0",
     "@napi-rs/canvas": "^1.0.0",
     "axios": "^1.16.1",
     "axios-cookiejar-support": "^7.0.0",
