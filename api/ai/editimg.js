@@ -30,7 +30,7 @@ async function editImageWithGemini(imageBase64, mimeType, prompt) {
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
 
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash-image',
+    model: 'gemini-2.0-flash-exp',
     generationConfig: {
       responseModalities: ['Text', 'Image']
     }
@@ -116,7 +116,7 @@ async function handler(req, res) {
     return res.json({
       status: true,
       creator: 'Danzz',
-      model: 'gemini-2.5-flash-image',
+      model: 'gemini-2.0-flash-exp',
       text: text || null,
       mimeType: editedMime,
       image: `data:${editedMime};base64,${editedBase64}`
