@@ -1,11 +1,10 @@
 /*
-  AI Image Editor — Gemini Edition
-  Replaces live3d.io scraper
-  Requires: @google/generative-ai
-  Install: npm install @google/generative-ai
+  AI Image Editor — Gemini Edition (Updated)
+  Model: gemini-2.5-flash-image (free tier: 500 RPD)
+  Requires: npm install @google/genai
 */
 
-const { GoogleGenerativeAI } = require('@google/generative-ai')
+const { GoogleGenAI } = require('@google/genai')
 const fs = require('fs')
 const path = require('path')
 const os = require('os')
@@ -22,31 +21,27 @@ async function downloadImageToTemp(imageUrl) {
   return { tmpPath, contentType }
 }
 
-function imageToBase64(filePath) {
-  return fs.readFileSync(filePath).toString('base64')
-}
+async function editImageWithGemini(imagePath, mimeType, prompt) {
+  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })
 
-async function editImageWithGemini(imageBase64, mimeType, prompt) {
-  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
+  const imageBase64 = fs.readFileSync(imagePath).toString('base64')
 
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash-exp',
-    generationConfig: {
-      responseModalities: ['Text', 'Image']
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash-image',
+    contents: [
+      {
+        inlineData: {
+          mimeType: mimeType,
+          data: imageBase64
+        }
+      },
+      { text: prompt }
+    ],
+    config: {
+      responseModalities: ['TEXT', 'IMAGE']
     }
   })
 
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        data: imageBase64,
-        mimeType: mimeType
-      }
-    },
-    { text: prompt }
-  ])
-
-  const response = result.response
   let resultText = null
   let resultImageBase64 = null
   let resultMimeType = 'image/png'
@@ -89,46 +84,28 @@ async function handler(req, res) {
   }
 
   let tmpPath = null
-  let outPath = null
 
   try {
-    // 1. Download gambar input
     const { tmpPath: tp, contentType } = await downloadImageToTemp(imageUrl)
     tmpPath = tp
 
-    // 2. Konversi ke base64
-    const imageBase64 = imageToBase64(tmpPath)
+    const { imageBase64, mimeType, text } = await editImageWithGemini(tmpPath, contentType, prompt)
 
-    // 3. Edit pakai Gemini
-    const { imageBase64: editedBase64, mimeType: editedMime, text } = await editImageWithGemini(
-      imageBase64,
-      contentType,
-      prompt
-    )
-
-    // 4. Simpan hasil ke temp, lalu kirim sebagai response base64
-    //    (atau simpan ke storage kamu sendiri kalau mau return URL)
-    const ext = editedMime.includes('png') ? '.png' : editedMime.includes('webp') ? '.webp' : '.jpg'
-    outPath = path.join(os.tmpdir(), `gemini_result_${Date.now()}${ext}`)
-    fs.writeFileSync(outPath, Buffer.from(editedBase64, 'base64'))
-
-    // Kirim sebagai base64 data URL — ganti bagian ini kalau mau upload ke CDN
     return res.json({
       status: true,
       creator: 'Danzz',
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.5-flash-image',
       text: text || null,
-      mimeType: editedMime,
-      image: `data:${editedMime};base64,${editedBase64}`
+      mimeType,
+      image: `data:${mimeType};base64,${imageBase64}`
     })
 
   } catch (err) {
     return res.status(500).json({ status: false, message: err.message })
   } finally {
     if (tmpPath && fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath)
-    if (outPath && fs.existsSync(outPath)) fs.unlinkSync(outPath)
   }
 }
 
 module.exports = { handler }
-    
+  
