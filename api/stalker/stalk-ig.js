@@ -1,7 +1,7 @@
 /**
  *   INSTAGRAM STALKER (API Handler Structure)
  *
- *   [•] AUTHOR    :: DEFAN
+ *   [•] AUTHOR    :: DEFAN (Modified for API Handler)
  *   [•] WEB       :: soonex.biz.id
  *   [•] DESCRIPTION :: Stalk Instagram profile info using username
  *   [•] BASE      :: Supabase Edge Function
@@ -10,8 +10,7 @@
 const axios = require('axios');
 
 const BASE_URL = 'https://fukqyugetzepsaanzqcy.supabase.co';
-// PERHATIAN: Masukkan ANON_KEY kamu yang utuh di bawah ini
-const ANON_KEY = 'YOUR_FULL_ANON_KEY_HERE'; 
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1a3F5dWdldHplcHNhYW56cWN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMTkxODMsImV4cCI6MjA2NTY5NTE4M30.RmRmd34FN5r3Q77Nt5GrDCqrrxOtAJWAaSQBJKh8fAM';
 
 const headers = {
     'Authorization': 'Bearer ' + ANON_KEY,
@@ -19,7 +18,7 @@ const headers = {
     'Content-Type': 'application/json'
 };
 
-// Fungsi helper untuk mengambil data (Setara dengan getDetails di kode sebelumnya)
+// Fungsi helper untuk mengambil data dari Supabase Edge Function
 async function getInstagramProfile(username) {
     try {
         const url = `${BASE_URL}/functions/v1/mediafy-proxy?endpoint=info&username=${username}`;
@@ -49,9 +48,9 @@ async function getInstagramProfile(username) {
 
 // Fungsi utama API Handler
 async function handler(req, res) {
-    const { username } = req.query;
+    // Mendukung query ?username= atau ?text= agar lebih fleksibel
+    const username = req.query.username || req.query.text;
 
-    // Validasi input parameter
     if (!username) {
         return res.status(400).json({
             status: false,
@@ -63,7 +62,6 @@ async function handler(req, res) {
     try {
         const result = await getInstagramProfile(username);
 
-        // Jika user tidak ditemukan
         if (!result) {
             return res.status(404).json({
                 status: false,
@@ -71,7 +69,6 @@ async function handler(req, res) {
             });
         }
 
-        // Response sukses
         return res.status(200).json({
             status: true,
             creator: 'Danzz',
@@ -79,7 +76,6 @@ async function handler(req, res) {
         });
 
     } catch (err) {
-        // Response error
         return res.status(500).json({ 
             status: false, 
             message: err.response?.data?.message || err.message || 'Internal Server Error' 
