@@ -11,7 +11,7 @@ async function handler(req, res) {
         return res.status(400).json({
             status: false,
             message: 'Query ?text= wajib diisi',
-            example: '/api/ai/groq?text=Halo apa kabar'
+            example: '/api/ai/openai?text=Halo apa kabar'
         });
     }
 
@@ -21,6 +21,7 @@ async function handler(req, res) {
             {
                 model: 'openai/gpt-oss-20b',
                 messages: [
+                    { role: 'system', content: 'Kamu adalah asisten AI. Selalu jawab dalam Bahasa Indonesia.' },
                     { role: 'user', content: text.trim() }
                 ]
             },
