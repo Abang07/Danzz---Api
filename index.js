@@ -40,6 +40,7 @@ const ENDPOINT_META = {
   'cekxl':            { param: 'nomor',    desc: 'Cek info paket nomor XL',                              placeholder: '087812345678' },
   'hd':               { param: 'url',      desc: 'Enhance gambar ke Ultra HD (AI)',                      placeholder: 'https://example.com/image.jpg' },
   'hd-video':         { param: 'url',      desc: 'Enhance video ke Ultra HD (AI)',                       placeholder: 'https://example.com/video.mp4' },
+  'pinterest':        { param: 'keyword',  desc: 'Search foto/video dari Pinterest',                     placeholder: 'aesthetic room' },
   'removebg':         { param: 'url',      desc: 'Hapus background gambar (AI)',                         placeholder: 'https://example.com/image.jpg' },
 };
 
