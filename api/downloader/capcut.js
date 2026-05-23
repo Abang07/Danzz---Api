@@ -11,26 +11,33 @@ async function downloadCapcut(capcutUrl) {
 
     const page = await browser.newPage();
     let videoUrl = null;
-    let title = '';
 
     page.on('response', async (response) => {
         const url = response.url();
-        if (url.includes('capcutvod.com') && url.includes('.mp4')) {
+        if (url.includes('capcutvod.com') && url.includes('mp4')) {
             if (!videoUrl) videoUrl = url;
         }
     });
 
     await page.goto(`https://www.capcut.com/template-detail/${templateId}`, {
         waitUntil: 'networkidle2',
-        timeout: 30000
+        timeout: 60000
     });
 
-    title = await page.title();
+    // Tunggu 5 detik biar video autoplay
+    await new Promise(r => setTimeout(r, 5000));
+
+    // Coba klik play button kalau ada
+    try {
+        await page.click('video');
+    } catch {}
+
+    await new Promise(r => setTimeout(r, 3000));
 
     await browser.close();
 
     if (!videoUrl) throw new Error('Video tidak ditemukan');
-    return { title, videoUrl };
+    return { videoUrl };
 }
 
 async function handler(req, res) {
