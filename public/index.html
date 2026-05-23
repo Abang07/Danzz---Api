@@ -279,7 +279,7 @@ function renderEp(ep, c) {
       + '<div class="loading" id="loading-detik"><div class="spinner" style="border-top-color:'+c.color+'"></div> Mengambil data...</div>'
       + '<div class="result-label" id="rlabel-detik">Response</div>'
       + '<div class="result-box" id="result-detik"></div>';
-  } else if (ep.params && ep.params.length > 1) {
+  } else if (ep.params && ep.params.length >= 1) {
     testerBody = multiInputs
       + '<div class="loading" id="loading-'+id+'"><div class="spinner" style="border-top-color:'+c.color+'"></div> Mengambil data...</div>'
       + '<div class="result-label" id="rlabel-'+id+'">Response</div>'
