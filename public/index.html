@@ -254,7 +254,7 @@ function renderEp(ep, c) {
   // Kalau ep.params ada (array), render semua input
   var multiInputs = '';
   var multiParam = param;
-  if (ep.params && ep.params.length > 1) {
+  if (ep.params && ep.params.length >= 1) {
     multiInputs = ep.params.map(function(p, i) {
       return '<div class="tester-label"' + (i > 0 ? ' style="margin-top:7px"' : '') + '>Parameter: ' + p.name + '</div>'
         + '<div class="input-row">'
