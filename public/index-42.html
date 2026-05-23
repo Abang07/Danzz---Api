@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Danzz API</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#080b11;--card:#121929;--border:#1e2a40;--ac:#4fffb0;--ac2:#4f8fff;--ac3:#ff4f9b;--text:#c9d4f0;--muted:#4a5578}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,255,176,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(79,255,176,.02) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.blob{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px)}
+.blob1{width:500px;height:500px;top:-150px;left:-150px;background:rgba(79,255,176,.05);animation:bm 10s ease-in-out infinite alternate}
+.blob2{width:400px;height:400px;bottom:-100px;right:-100px;background:rgba(79,143,255,.05);animation:bm 10s ease-in-out infinite alternate-reverse}
+@keyframes bm{0%{transform:translate(0,0) scale(1)}100%{transform:translate(50px,40px) scale(1.15)}}
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 16px 80px}
+
+/* Header */
+header{text-align:center;padding:56px 16px 40px;animation:fadeD .6s ease both}
+@keyframes fadeD{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeU{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.badge{display:inline-flex;align-items:center;gap:7px;background:rgba(79,255,176,.07);border:1px solid rgba(79,255,176,.18);color:var(--ac);padding:5px 16px;border-radius:999px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px}
+.dot{width:6px;height:6px;background:var(--ac);border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.6)}}
+header h1{font-size:clamp(2rem,8vw,3.4rem);font-weight:800;color:#fff;line-height:1.1;margin-bottom:10px}
+header h1 .hl{color:var(--ac)}
+header p{color:var(--muted);font-size:.9rem;max-width:400px;margin:0 auto 22px;line-height:1.7}
+.creator-row{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);padding:11px 18px;border-radius:14px;max-width:340px;margin:0 auto}
+.ava{width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;border:2px solid var(--ac);background:linear-gradient(135deg,var(--ac),var(--ac2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#000}
+.ava img{width:100%;height:100%;object-fit:cover;display:block}
+.creator-info{text-align:left;flex:1;min-width:0}
+.creator-info .name{font-weight:700;color:#fff;font-size:.88rem}
+.creator-info .role{color:var(--muted);font-size:.7rem}
+.socmed{display:flex;gap:5px}
+.socmed a{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:7px;font-size:.7rem;transition:all .2s}
+.socmed a:hover{color:var(--ac);border-color:var(--ac)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:32px 0 0;animation:fadeU .6s .1s ease both}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 10px;text-align:center;transition:border-color .2s,transform .2s}
+.stat:hover{border-color:rgba(79,255,176,.25);transform:translateY(-3px)}
+.stat .num{font-family:'JetBrains Mono',monospace;font-size:1.55rem;font-weight:700;color:#fff}
+.stat .num .ac{color:var(--ac)}
+.stat .lbl{color:var(--muted);font-size:.65rem;margin-top:4px;text-transform:uppercase;letter-spacing:.07em}
+
+.sec{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);display:flex;align-items:center;gap:10px;margin:40px 0 12px}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Category cards */
+.cat-list{display:flex;flex-direction:column;gap:10px;animation:fadeU .5s .15s ease both}
+
+.cat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s}
+.cat-card.open.dl{border-color:rgba(79,255,176,.3)}
+.cat-card.open.st{border-color:rgba(79,143,255,.3)}
+
+.cat-header{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .15s}
+.cat-header:hover{background:rgba(255,255,255,.02)}
+.cat-icon-wrap{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.dl .cat-icon-wrap{background:rgba(79,255,176,.08)}
+.st .cat-icon-wrap{background:rgba(79,143,255,.08)}
+.cat-meta{flex:1;min-width:0}
+.cat-title{font-weight:700;font-size:.9rem;color:#fff}
+.cat-sub{font-size:.7rem;color:var(--muted);margin-top:2px}
+.cat-badge{font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:7px;flex-shrink:0}
+.dl .cat-badge{background:rgba(79,255,176,.1);color:var(--ac);border:1px solid rgba(79,255,176,.2)}
+.st .cat-badge{background:rgba(79,143,255,.1);color:var(--ac2);border:1px solid rgba(79,143,255,.2)}
+.cat-arrow{color:var(--muted);font-size:.75rem;flex-shrink:0;transition:transform .25s}
+.cat-card.open .cat-arrow{transform:rotate(180deg)}
+
+/* Endpoints inside category */
+.ep-body{display:none;border-top:1px solid var(--border)}
+.cat-card.open .ep-body{display:block;animation:slideDown .25s ease both}
+
+.ep-card{border-bottom:1px solid var(--border)}
+.ep-card:last-child{border-bottom:none}
+.ep-head{padding:14px 16px 12px}
+.ep-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.method{font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:5px;flex-shrink:0;background:rgba(79,255,176,.1);color:var(--ac);border:1px solid rgba(79,255,176,.18)}
+.ep-path{font-family:'JetBrains Mono',monospace;color:#fff;font-size:.82rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ep-desc{color:var(--muted);font-size:.78rem;margin-bottom:10px;line-height:1.5}
+.ep-btns{display:flex;gap:7px}
+
+.btn-copy-ep{font-size:.7rem;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;border:1px solid}
+.btn-copy-dl{background:rgba(79,255,176,.07);border-color:rgba(79,255,176,.2);color:var(--ac)}
+.btn-copy-dl:hover{background:rgba(79,255,176,.16)}
+.btn-copy-st{background:rgba(79,143,255,.07);border-color:rgba(79,143,255,.2);color:var(--ac2)}
+.btn-copy-st:hover{background:rgba(79,143,255,.16)}
+
+.btn-try{border:none;font-size:.7rem;font-weight:800;padding:6px 14px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s}
+.btn-try-dl{background:var(--ac);color:#000}
+.btn-try-dl:hover{background:#3de89a}
+.btn-try-st{background:var(--ac2);color:#fff}
+.btn-try-st:hover{background:#3a7de8}
+
+/* Tester */
+.tester{border-top:1px solid var(--border);padding:14px;display:none}
+.tester.open{display:block;animation:slideDown .2s ease both}
+.tester-label{font-size:.67rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.input-row{display:flex;gap:7px;margin-bottom:9px}
+.tester-input{flex:1;background:#07090f;border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.75rem;padding:9px 12px;border-radius:9px;outline:none;transition:border-color .18s;min-width:0}
+.tester-input::placeholder{color:var(--muted)}
+.fi-dl:focus{border-color:var(--ac)}
+.fi-st:focus{border-color:var(--ac2)}
+.btn-send{border:none;font-weight:800;font-size:.75rem;padding:9px 14px;border-radius:9px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;white-space:nowrap;flex-shrink:0}
+.btn-send:disabled{opacity:.45;cursor:not-allowed}
+.btn-send-dl{background:var(--ac);color:#000}
+.btn-send-dl:hover:not(:disabled){background:#3de89a}
+.btn-send-st{background:var(--ac2);color:#fff}
+.btn-send-st:hover:not(:disabled){background:#3a7de8}
+.loading{display:none;align-items:center;gap:7px;color:var(--muted);font-size:.76rem;margin-bottom:7px}
+.loading.show{display:flex}
+.spinner{width:13px;height:13px;border:2px solid var(--border);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0}
+.sp-dl{border-top-color:var(--ac)}
+.sp-st{border-top-color:var(--ac2)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result-label{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:none}
+.result-label.show{display:block}
+.result-box{background:#07090f;border:1px solid var(--border);border-radius:9px;padding:12px 13px;font-family:'JetBrains Mono',monospace;font-size:.73rem;line-height:1.8;white-space:pre-wrap;word-break:break-all;max-height:240px;overflow-y:auto;display:none}
+.result-box.show{display:block}
+.result-box.err{color:#fca5a5}
+.rb-dl{color:#6ee7b7}
+.rb-st{color:#7dd3fc}
+
+/* Docs */
+.docs{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:0;animation:fadeU .5s .25s ease both}
+.tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto}
+.tab{padding:11px 16px;font-size:.78rem;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;border-bottom:2px solid transparent;transition:color .18s,border-color .18s;white-space:nowrap}
+.tab.on{color:var(--ac);border-bottom-color:var(--ac)}
+.pane{display:none;padding:18px}
+.pane.on{display:block}
+.pane p{color:var(--muted);font-size:.83rem;line-height:1.75;margin-bottom:9px}
+.pane p b{color:var(--text)}
+.pane ol{padding-left:16px;color:var(--muted);font-size:.83rem;line-height:1.9}
+.pane ol li b{color:var(--text)}
+.code{background:#07090f;border:1px solid var(--border);border-radius:9px;padding:12px 13px;margin:9px 0;position:relative}
+.code pre{font-family:'JetBrains Mono',monospace;font-size:.73rem;color:#6ee7b7;line-height:1.8;white-space:pre-wrap;word-break:break-all;padding-right:60px}
+.copy-btn{position:absolute;top:9px;right:9px;background:rgba(79,255,176,.13);border:1px solid rgba(79,255,176,.25);color:var(--ac);font-size:.64rem;font-weight:700;padding:3px 10px;border-radius:5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;white-space:nowrap}
+.copy-btn:hover{background:rgba(79,255,176,.25)}
+.jk{color:#7dd3fc}.js{color:#fca5a5}.jb{color:#c084fc}.jbr{color:#4fffb0}
+
+footer{text-align:center;padding:36px 16px 0;color:var(--muted);font-size:.74rem;line-height:1.8}
+footer span{color:var(--ac)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+</style>
+</head>
+<body>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="wrap">
+
+  <header>
+    <div class="badge"><span class="dot"></span> API Online &amp; Ready</div>
+    <h1>Danzz<span class="hl">API</span></h1>
+    <p>REST API gratis, cepat, dan mudah digunakan. Tinggal hit endpoint, langsung dapat data.</p>
+    <div class="creator-row">
+      <div class="ava" id="ava-owner">D</div>
+      <div class="creator-info">
+        <div class="name">Danzz</div>
+        <div class="role">Creator &amp; Developer</div>
+      </div>
+      <div class="socmed">
+        <a href="https://github.com/Abang07" target="_blank">GitHub</a>
+        <a href="https://www.instagram.com/dannn.15_" target="_blank">Instagram</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="num" id="reqCount">0<span class="ac">+</span></div>
+      <div class="lbl">Total Request</div>
+    </div>
+    <div class="stat">
+      <div class="num"><span class="ac">26</span></div>
+      <div class="lbl">Endpoint Aktif</div>
+    </div>
+
+  </div>
+
+  <div class="sec">Endpoints</div>
+  <div class="cat-list">
+
+    <!-- ══ DOWNLOADER ══ -->
+    <div class="cat-card dl">
+      <div class="cat-header">
+        <div class="cat-icon-wrap">⬇️</div>
+        <div class="cat-meta">
+          <div class="cat-title">Downloader</div>
+          <div class="cat-sub">TikTok · Instagram · YouTube</div>
+        </div>
+        <div class="cat-badge">4 endpoint</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="ep-body">
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method">GET</div>
+              <div class="ep-path">/api/downloader/tiktok</div>
+            </div>
+            <div class="ep-desc">Download video TikTok tanpa watermark. Tersedia format MP4 &amp; MP3.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep btn-copy-dl" data-path="/api/downloader/tiktok?url=">Salin URL</button>
+              <button class="btn-try btn-try-dl">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: url</div>
+            <div class="input-row">
+              <input class="tester-input fi-dl" id="input-tiktok" type="text" placeholder="https://vt.tiktok.com/ZS9qqmN16/"/>
+              <button class="btn-send btn-send-dl" id="send-tiktok" data-id="tiktok" data-param="url" data-endpoint="/api/downloader/tiktok?url=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-tiktok"><div class="spinner sp-dl"></div> Mengambil data...</div>
+            <div class="result-label" id="rlabel-tiktok">Response</div>
+            <div class="result-box rb-dl" id="result-tiktok"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method">GET</div>
+              <div class="ep-path">/api/downloader/instagram</div>
+            </div>
+            <div class="ep-desc">Download foto &amp; video Instagram. Reels, post, carousel semua bisa.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep btn-copy-dl" data-path="/api/downloader/instagram?url=">Salin URL</button>
+              <button class="btn-try btn-try-dl">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: url</div>
+            <div class="input-row">
+              <input class="tester-input fi-dl" id="input-instagram" type="text" placeholder="https://www.instagram.com/p/xxx/"/>
+              <button class="btn-send btn-send-dl" id="send-instagram" data-id="instagram" data-param="url" data-endpoint="/api/downloader/instagram?url=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-instagram"><div class="spinner sp-dl"></div> Mengambil data...</div>
+            <div class="result-label" id="rlabel-instagram">Response</div>
+            <div class="result-box rb-dl" id="result-instagram"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method">GET</div>
+              <div class="ep-path">/api/downloader/youtube</div>
+            </div>
+            <div class="ep-desc">Download video YouTube. Tersedia berbagai resolusi MP4 &amp; audio M4A.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep btn-copy-dl" data-path="/api/downloader/youtube?url=">Salin URL</button>
+              <button class="btn-try btn-try-dl">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: url</div>
+            <div class="input-row">
+              <input class="tester-input fi-dl" id="input-youtube" type="text" placeholder="https://youtu.be/xxxxx"/>
+              <button class="btn-send btn-send-dl" id="send-youtube" data-id="youtube" data-param="url" data-endpoint="/api/downloader/youtube?url=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-youtube"><div class="spinner sp-dl"></div> Mengambil data...</div>
+            <div class="result-label" id="rlabel-youtube">Response</div>
+            <div class="result-box rb-dl" id="result-youtube"></div>
+          </div>
+        </div>
+
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method">GET</div>
+              <div class="ep-path">/api/downloader/facebook</div>
+            </div>
+            <div class="ep-desc">Download video Facebook publik. Tersedia berbagai kualitas.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep btn-copy-dl" data-path="/api/downloader/facebook?url=">Salin URL</button>
+              <button class="btn-try btn-try-dl">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: url</div>
+            <div class="input-row">
+              <input class="tester-input fi-dl" id="input-facebook" type="text" placeholder="https://www.facebook.com/xxx/videos/xxx"/>
+              <button class="btn-send btn-send-dl" id="send-facebook" data-id="facebook" data-param="url" data-endpoint="/api/downloader/facebook?url=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-facebook"><div class="spinner sp-dl"></div> Mengambil data...</div>
+            <div class="result-label" id="rlabel-facebook">Response</div>
+            <div class="result-box rb-dl" id="result-facebook"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ STALK ══ -->
+    <div class="cat-card st">
+      <div class="cat-header">
+        <div class="cat-icon-wrap">🔍</div>
+        <div class="cat-meta">
+          <div class="cat-title">Stalk</div>
+          <div class="cat-sub">Info profil sosial media</div>
+        </div>
+        <div class="cat-badge">2 endpoint</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="ep-body">
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(79,143,255,.1);color:var(--ac2);border-color:rgba(79,143,255,.18)">GET</div>
+              <div class="ep-path">/api/stalker/stalk-tiktok</div>
+            </div>
+            <div class="ep-desc">Lihat info profil TikTok: followers, following, likes, jumlah video, bio, region, dan status verified.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep btn-copy-st" data-path="/api/stalker/stalk-tiktok?username=">Salin URL</button>
+              <button class="btn-try btn-try-st">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: username</div>
+            <div class="input-row">
+              <input class="tester-input fi-st" id="input-stalk-tiktok" type="text" placeholder="khaby.lame atau @khaby.lame"/>
+              <button class="btn-send btn-send-st" id="send-stalk-tiktok" data-id="stalk-tiktok" data-param="username" data-endpoint="/api/stalker/stalk-tiktok?username=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-stalk-tiktok"><div class="spinner sp-st"></div> Mengambil data...</div>
+            <div class="result-label" id="rlabel-stalk-tiktok">Response</div>
+            <div class="result-box rb-st" id="result-stalk-tiktok"></div>
+          </div>
+        </div>
+
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(79,143,255,.1);color:var(--ac2);border-color:rgba(79,143,255,.18)">GET</div>
+              <div class="ep-path">/api/stalker/stalk-ig</div>
+            </div>
+            <div class="ep-desc">Lihat info profil Instagram: followers, following, posts, bio, foto profil, dan status verified.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep btn-copy-st" data-path="/api/stalker/stalk-ig?username=">Salin URL</button>
+              <button class="btn-try btn-try-st">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: username</div>
+            <div class="input-row">
+              <input class="tester-input fi-st" id="input-stalk-ig" type="text" placeholder="instagram"/>
+              <button class="btn-send btn-send-st" id="send-stalk-ig" data-id="stalk-ig" data-param="username" data-endpoint="/api/stalker/stalk-ig?username=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-stalk-ig"><div class="spinner sp-st"></div> Mengambil data...</div>
+            <div class="result-label" id="rlabel-stalk-ig">Response</div>
+            <div class="result-box rb-st" id="result-stalk-ig"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ MAKER ══ -->
+    <div class="cat-card" style="--cat-ac:#ff4f9b">
+      <div class="cat-header">
+        <div class="cat-icon-wrap" style="background:rgba(255,79,155,.08)">🎨</div>
+        <div class="cat-meta">
+          <div class="cat-title">Maker</div>
+          <div class="cat-sub">Fake Chat · Brat Generator · dan lainnya</div>
+        </div>
+        <div class="cat-badge" style="background:rgba(255,79,155,.1);color:var(--ac3);border:1px solid rgba(255,79,155,.2)">3 endpoint</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="ep-body">
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(255,79,155,.1);color:var(--ac3);border-color:rgba(255,79,155,.18)">GET</div>
+              <div class="ep-path">/api/maker/brat</div>
+            </div>
+            <div class="ep-desc">Generate gambar brat-style ala Charli XCX dari teks. Langsung return image PNG.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(255,79,155,.07);border-color:rgba(255,79,155,.2);color:var(--ac3)" data-path="/api/maker/brat?text=">Salin URL</button>
+              <button class="btn-try" style="background:var(--ac3);color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: text</div>
+            <div class="input-row">
+              <input class="tester-input" style="--focus-color:var(--ac3)" id="input-brat" type="text" placeholder="kangen masa lalu ya?"/>
+              <button class="btn-send" style="background:var(--ac3);color:#fff" id="send-brat" data-id="brat" data-param="text" data-endpoint="/api/maker/brat?text=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-brat"><div class="spinner" style="border-top-color:var(--ac3)"></div> Generating...</div>
+            <div class="result-label" id="rlabel-brat">Response</div>
+            <div class="result-box" style="color:#f9a8d4" id="result-brat"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(255,79,155,.1);color:var(--ac3);border-color:rgba(255,79,155,.18)">GET</div>
+              <div class="ep-path">/api/maker/iqc</div>
+            </div>
+            <div class="ep-desc">Generate gambar IQC style dari teks. Parameter time opsional (format: HH.MM), default jam sekarang.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(255,79,155,.07);border-color:rgba(255,79,155,.2);color:var(--ac3)" data-path="/api/maker/iqc?text=">Salin URL</button>
+              <button class="btn-try" style="background:var(--ac3);color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: text</div>
+            <div class="input-row">
+              <input class="tester-input" style="--focus-color:var(--ac3)" id="input-iqc" type="text" placeholder="Hello World"/>
+            </div>
+            <div class="tester-label" style="margin-top:4px">Parameter: time (opsional, format HH.MM)</div>
+            <div class="input-row">
+              <input class="tester-input" style="--focus-color:var(--ac3)" id="input-iqc-time" type="text" placeholder="08.30 (kosongkan = jam sekarang)"/>
+              <button class="btn-send" style="background:var(--ac3);color:#fff" id="send-iqc" data-id="iqc" data-param="text" data-endpoint="/api/maker/iqc?text=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-iqc"><div class="spinner" style="border-top-color:var(--ac3)"></div> Generating...</div>
+            <div class="result-label" id="rlabel-iqc">Response</div>
+            <div class="result-box" style="color:#f9a8d4" id="result-iqc"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(255,79,155,.1);color:var(--ac3);border-color:rgba(255,79,155,.18)">GET</div>
+              <div class="ep-path">/api/maker/brat-video</div>
+            </div>
+            <div class="ep-desc">Generate video brat-style dari teks. Langsung return video MP4.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(255,79,155,.07);border-color:rgba(255,79,155,.2);color:var(--ac3)" data-path="/api/maker/brat-video?text=">Salin URL</button>
+              <button class="btn-try" style="background:var(--ac3);color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: text</div>
+            <div class="input-row">
+              <input class="tester-input" style="--focus-color:var(--ac3)" id="input-brat-video" type="text" placeholder="Just friend ygy"/>
+              <button class="btn-send" style="background:var(--ac3);color:#fff" id="send-brat-video" data-id="brat-video" data-param="text" data-endpoint="/api/maker/brat-video?text=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-brat-video"><div class="spinner" style="border-top-color:var(--ac3)"></div> Generating video...</div>
+            <div class="result-label" id="rlabel-brat-video">Response</div>
+            <div class="result-box" style="color:#f9a8d4" id="result-brat-video"></div>
+          </div>
+        </div>
+
+
+
+      </div>
+    </div>
+
+    <!-- ══ TOOLS ══ -->
+    <div class="cat-card" style="--cat-ac:#a78bfa">
+      <div class="cat-header">
+        <div class="cat-icon-wrap" style="background:rgba(167,139,250,.08)">🛠️</div>
+        <div class="cat-meta">
+          <div class="cat-title">Tools</div>
+          <div class="cat-sub">Image Enhancer · dan lainnya</div>
+        </div>
+        <div class="cat-badge" style="background:rgba(167,139,250,.1);color:#a78bfa;border:1px solid rgba(167,139,250,.2)">4 endpoint</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="ep-body">
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(167,139,250,.1);color:#a78bfa;border-color:rgba(167,139,250,.18)">GET</div>
+              <div class="ep-path">/api/tools/hd</div>
+            </div>
+            <div class="ep-desc">Enhance gambar ke kualitas Ultra HD. Input URL gambar, output URL gambar HD.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(167,139,250,.07);border-color:rgba(167,139,250,.2);color:#a78bfa" data-path="/api/tools/hd?url=">Salin URL</button>
+              <button class="btn-try" style="background:#a78bfa;color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: url</div>
+            <div class="input-row">
+              <input class="tester-input" id="input-hd" type="text" placeholder="https://example.com/image.jpg"/>
+              <button class="btn-send" style="background:#a78bfa;color:#fff" id="send-hd" data-id="hd" data-param="url" data-endpoint="/api/tools/hd?url=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-hd"><div class="spinner" style="border-top-color:#a78bfa"></div> Memproses gambar...</div>
+            <div class="result-label" id="rlabel-hd">Response</div>
+            <div class="result-box" style="color:#c4b5fd" id="result-hd"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(167,139,250,.1);color:#a78bfa;border-color:rgba(167,139,250,.18)">GET</div>
+              <div class="ep-path">/api/tools/removebg</div>
+            </div>
+            <div class="ep-desc">Hapus background gambar secara otomatis. Input URL gambar, output PNG tanpa background.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(167,139,250,.07);border-color:rgba(167,139,250,.2);color:#a78bfa" data-path="/api/tools/removebg?url=">Salin URL</button>
+              <button class="btn-try" style="background:#a78bfa;color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: url</div>
+            <div class="input-row">
+              <input class="tester-input" id="input-removebg" type="text" placeholder="https://example.com/image.jpg"/>
+              <button class="btn-send" style="background:#a78bfa;color:#fff" id="send-removebg" data-id="removebg" data-param="url" data-endpoint="/api/tools/removebg?url=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-removebg"><div class="spinner" style="border-top-color:#a78bfa"></div> Menghapus background...</div>
+            <div class="result-label" id="rlabel-removebg">Response</div>
+            <div class="result-box" style="color:#c4b5fd" id="result-removebg"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(167,139,250,.1);color:#a78bfa;border-color:rgba(167,139,250,.18)">GET</div>
+              <div class="ep-path">/api/tools/hd-video</div>
+            </div>
+            <div class="ep-desc">Enhance video ke kualitas Ultra HD menggunakan Wink AI. Input URL video, output URL video HD. Proses memakan waktu 2-3 menit.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(167,139,250,.07);border-color:rgba(167,139,250,.2);color:#a78bfa" data-path="/api/tools/hd-video?url=">Salin URL</button>
+              <button class="btn-try" style="background:#a78bfa;color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: url</div>
+            <div class="input-row">
+              <input class="tester-input" id="input-hd-video" type="text" placeholder="https://example.com/video.mp4"/>
+              <button class="btn-send" style="background:#a78bfa;color:#fff" id="send-hd-video" data-id="hd-video" data-param="url" data-endpoint="/api/tools/hd-video?url=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-hd-video"><div class="spinner" style="border-top-color:#a78bfa"></div> Memproses video (2-3 menit)...</div>
+            <div class="result-label" id="rlabel-hd-video">Response</div>
+            <div class="result-box" style="color:#c4b5fd" id="result-hd-video"></div>
+          </div>
+        </div>
+
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(167,139,250,.1);color:#a78bfa;border-color:rgba(167,139,250,.18)">GET</div>
+              <div class="ep-path">/api/tools/cekxl</div>
+            </div>
+            <div class="ep-desc">Cek kuota &amp; paket nomor XL/Axis. Masukkan nomor dengan format 087xxxxxxx.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(167,139,250,.07);border-color:rgba(167,139,250,.2);color:#a78bfa" data-path="/api/tools/cekxl?nomor=">Salin URL</button>
+              <button class="btn-try" style="background:#a78bfa;color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: nomor</div>
+            <div class="input-row">
+              <input class="tester-input" id="input-cekxl" type="text" placeholder="087812345678"/>
+              <button class="btn-send" style="background:#a78bfa;color:#fff" id="send-cekxl" data-id="cekxl" data-param="nomor" data-endpoint="/api/tools/cekxl?nomor=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-cekxl"><div class="spinner" style="border-top-color:#a78bfa"></div> Mengecek kuota...</div>
+            <div class="result-label" id="rlabel-cekxl">Response</div>
+            <div class="result-box" style="color:#c4b5fd" id="result-cekxl"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ SEARCH ══ -->
+    <div class="cat-card" style="--cat-ac:#fb923c">
+      <div class="cat-header">
+        <div class="cat-icon-wrap" style="background:rgba(251,146,60,.08)">🔎</div>
+        <div class="cat-meta">
+          <div class="cat-title">Search</div>
+          <div class="cat-sub">Resep Masakan · dan lainnya</div>
+        </div>
+        <div class="cat-badge" style="background:rgba(251,146,60,.1);color:#fb923c;border:1px solid rgba(251,146,60,.2)">1 endpoint</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="ep-body">
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(251,146,60,.1);color:#fb923c;border-color:rgba(251,146,60,.18)">GET</div>
+              <div class="ep-path">/api/search/cookpad</div>
+            </div>
+            <div class="ep-desc">Cari resep masakan dari Cookpad. Hasil berupa judul, bahan-bahan, dan langkah memasak.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(251,146,60,.07);border-color:rgba(251,146,60,.2);color:#fb923c" data-path="/api/search/cookpad?search=">Salin URL</button>
+              <button class="btn-try" style="background:#fb923c;color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: search</div>
+            <div class="input-row">
+              <input class="tester-input" style="border-color:rgba(251,146,60,.3)" id="input-cookpad" type="text" placeholder="nasi goreng"/>
+              <button class="btn-send" style="background:#fb923c;color:#fff" id="send-cookpad" data-id="cookpad" data-param="search" data-endpoint="/api/search/cookpad?search=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-cookpad"><div class="spinner" style="border-top-color:#fb923c"></div> Mencari resep...</div>
+            <div class="result-label" id="rlabel-cookpad">Response</div>
+            <div class="result-box" style="color:#fed7aa" id="result-cookpad"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ══ MANGA ══ -->
+    <div class="cat-card" style="--cat-ac:#f97316">
+      <div class="cat-header">
+        <div class="cat-icon-wrap" style="background:rgba(249,115,22,.08)">📚</div>
+        <div class="cat-meta">
+          <div class="cat-title">Manga</div>
+          <div class="cat-sub">Webtoon · Komikindo · dan lainnya</div>
+        </div>
+        <div class="cat-badge" style="background:rgba(249,115,22,.1);color:#f97316;border:1px solid rgba(249,115,22,.2)">6 endpoint</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="ep-body">
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(249,115,22,.1);color:#f97316;border-color:rgba(249,115,22,.18)">GET</div>
+              <div class="ep-path">/api/manga/webtoon-search</div>
+            </div>
+            <div class="ep-desc">Cari komik di Webtoon. Hasil berupa judul, thumbnail, dan link komik.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(249,115,22,.07);border-color:rgba(249,115,22,.2);color:#f97316" data-path="/api/manga/webtoon-search?keyword=">Salin URL</button>
+              <button class="btn-try" style="background:#f97316;color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: keyword</div>
+            <div class="input-row">
+              <input class="tester-input" id="input-webtoon-search" type="text" placeholder="lookism"/>
+              <button class="btn-send" style="background:#f97316;color:#fff" id="send-webtoon-search" data-id="webtoon-search" data-param="keyword" data-endpoint="/api/manga/webtoon-search?keyword=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-webtoon-search"><div class="spinner" style="border-top-color:#f97316"></div> Mencari...</div>
+            <div class="result-label" id="rlabel-webtoon-search">Response</div>
+            <div class="result-box" style="color:#fed7aa" id="result-webtoon-search"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(249,115,22,.1);color:#f97316;border-color:rgba(249,115,22,.18)">GET</div>
+              <div class="ep-path">/api/manga/webtoon-detail</div>
+            </div>
+            <div class="ep-desc">Detail komik Webtoon beserta semua daftar episode dari pertama sampai terbaru.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(249,115,22,.07);border-color:rgba(249,115,22,.2);color:#f97316" data-path="/api/manga/webtoon-detail?url=">Salin URL</button>
+              <button class="btn-try" style="background:#f97316;color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: url</div>
+            <div class="input-row">
+              <input class="tester-input" id="input-webtoon-detail" type="text" placeholder="https://www.webtoons.com/id/action/lookism/list?title_no=532"/>
+              <button class="btn-send" style="background:#f97316;color:#fff" id="send-webtoon-detail" data-id="webtoon-detail" data-param="url" data-endpoint="/api/manga/webtoon-detail?url=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-webtoon-detail"><div class="spinner" style="border-top-color:#f97316"></div> Mengambil detail...</div>
+            <div class="result-label" id="rlabel-webtoon-detail">Response</div>
+            <div class="result-box" style="color:#fed7aa" id="result-webtoon-detail"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(249,115,22,.1);color:#f97316;border-color:rgba(249,115,22,.18)">GET</div>
+              <div class="ep-path">/api/manga/webtoon-download</div>
+            </div>
+            <div class="ep-desc">Download gambar episode Webtoon. Masukkan URL episode viewer.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(249,115,22,.07);border-color:rgba(249,115,22,.2);color:#f97316" data-path="/api/manga/webtoon-download?url=">Salin URL</button>
+              <button class="btn-try" style="background:#f97316;color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: url</div>
+            <div class="input-row">
+              <input class="tester-input" id="input-webtoon-download" type="text" placeholder="https://www.webtoons.com/id/action/lookism/ep01/viewer?title_no=532&episode_no=1"/>
+              <button class="btn-send" style="background:#f97316;color:#fff" id="send-webtoon-download" data-id="webtoon-download" data-param="url" data-endpoint="/api/manga/webtoon-download?url=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-webtoon-download"><div class="spinner" style="border-top-color:#f97316"></div> Mengambil gambar...</div>
+            <div class="result-label" id="rlabel-webtoon-download">Response</div>
+            <div class="result-box" style="color:#fed7aa" id="result-webtoon-download"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(249,115,22,.1);color:#f97316;border-color:rgba(249,115,22,.18)">GET</div>
+              <div class="ep-path">/api/manga/komik-search</div>
+            </div>
+            <div class="ep-desc">Cari komik di Komikindo. Hasil berupa judul, thumbnail, tipe, dan link komik.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(249,115,22,.07);border-color:rgba(249,115,22,.2);color:#f97316" data-path="/api/manga/komik-search?keyword=">Salin URL</button>
+              <button class="btn-try" style="background:#f97316;color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: keyword</div>
+            <div class="input-row">
+              <input class="tester-input" id="input-komik-search" type="text" placeholder="one piece"/>
+              <button class="btn-send" style="background:#f97316;color:#fff" id="send-komik-search" data-id="komik-search" data-param="keyword" data-endpoint="/api/manga/komik-search?keyword=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-komik-search"><div class="spinner" style="border-top-color:#f97316"></div> Mencari...</div>
+            <div class="result-label" id="rlabel-komik-search">Response</div>
+            <div class="result-box" style="color:#fed7aa" id="result-komik-search"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(249,115,22,.1);color:#f97316;border-color:rgba(249,115,22,.18)">GET</div>
+              <div class="ep-path">/api/manga/komik-detail</div>
+            </div>
+            <div class="ep-desc">Detail komik Komikindo beserta semua daftar chapter dari pertama sampai terbaru.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(249,115,22,.07);border-color:rgba(249,115,22,.2);color:#f97316" data-path="/api/manga/komik-detail?url=">Salin URL</button>
+              <button class="btn-try" style="background:#f97316;color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: url</div>
+            <div class="input-row">
+              <input class="tester-input" id="input-komik-detail" type="text" placeholder="https://komikindo.ch/komik/one-piece-id/"/>
+              <button class="btn-send" style="background:#f97316;color:#fff" id="send-komik-detail" data-id="komik-detail" data-param="url" data-endpoint="/api/manga/komik-detail?url=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-komik-detail"><div class="spinner" style="border-top-color:#f97316"></div> Mengambil detail...</div>
+            <div class="result-label" id="rlabel-komik-detail">Response</div>
+            <div class="result-box" style="color:#fed7aa" id="result-komik-detail"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(249,115,22,.1);color:#f97316;border-color:rgba(249,115,22,.18)">GET</div>
+              <div class="ep-path">/api/manga/komik-download</div>
+            </div>
+            <div class="ep-desc">Download gambar chapter komik dari Komikindo. Masukkan URL chapter.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(249,115,22,.07);border-color:rgba(249,115,22,.2);color:#f97316" data-path="/api/manga/komik-download?url=">Salin URL</button>
+              <button class="btn-try" style="background:#f97316;color:#fff">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: url</div>
+            <div class="input-row">
+              <input class="tester-input" id="input-komik-download" type="text" placeholder="https://komikindo.ch/one-piece-chapter-001/"/>
+              <button class="btn-send" style="background:#f97316;color:#fff" id="send-komik-download" data-id="komik-download" data-param="url" data-endpoint="/api/manga/komik-download?url=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-komik-download"><div class="spinner" style="border-top-color:#f97316"></div> Mengambil gambar...</div>
+            <div class="result-label" id="rlabel-komik-download">Response</div>
+            <div class="result-box" style="color:#fed7aa" id="result-komik-download"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ GAME ══ -->
+    <div class="cat-card" style="--cat-ac:#facc15">
+      <div class="cat-header">
+        <div class="cat-icon-wrap" style="background:rgba(250,204,21,.08)">🎮</div>
+        <div class="cat-meta">
+          <div class="cat-title">Game</div>
+          <div class="cat-sub">Tebak Kata · dan lainnya</div>
+        </div>
+        <div class="cat-badge" style="background:rgba(250,204,21,.1);color:#facc15;border:1px solid rgba(250,204,21,.2)">1 endpoint</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="ep-body">
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(250,204,21,.1);color:#facc15;border-color:rgba(250,204,21,.18)">GET</div>
+              <div class="ep-path">/api/game/tebakkata</div>
+            </div>
+            <div class="ep-desc">Dapatkan soal tebak kata acak beserta jawabannya. Tidak perlu parameter — langsung dapat data game!</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(250,204,21,.07);border-color:rgba(250,204,21,.2);color:#facc15" data-path="/api/game/tebakkata">Salin URL</button>
+              <button class="btn-try btn-try-tebakkata" style="background:#facc15;color:#000">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester tebakkata-tester">
+            <div class="loading" id="loading-tebakkata" style="margin-bottom:9px"><div class="spinner" style="border-top-color:#facc15"></div> Mengambil soal...</div>
+            <div class="result-label" id="rlabel-tebakkata">Response</div>
+            <div class="result-box" style="color:#fef08a" id="result-tebakkata"></div>
+            <div style="margin-top:9px;display:flex;justify-content:flex-end">
+              <button class="btn-send" style="background:#facc15;color:#000" id="send-tebakkata" data-id="tebakkata" data-param="" data-endpoint="/api/game/tebakkata">&#128260; Soal Baru</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ NEWS ══ -->
+    <div class="cat-card" style="--cat-ac:#38bdf8">
+      <div class="cat-header">
+        <div class="cat-icon-wrap" style="background:rgba(56,189,248,.08)">📰</div>
+        <div class="cat-meta">
+          <div class="cat-title">Berita</div>
+          <div class="cat-sub">Liputan6 Terkini &amp; Pencarian</div>
+        </div>
+        <div class="cat-badge" style="background:rgba(56,189,248,.1);color:#38bdf8;border:1px solid rgba(56,189,248,.2)">2 endpoint</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="ep-body">
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(56,189,248,.1);color:#38bdf8;border-color:rgba(56,189,248,.18)">GET</div>
+              <div class="ep-path">/api/news/liputan6-latest</div>
+            </div>
+            <div class="ep-desc">Ambil berita terkini dari Liputan6.com. Opsional parameter limit untuk jumlah berita.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(56,189,248,.07);border-color:rgba(56,189,248,.2);color:#38bdf8" data-path="/api/news/liputan6-latest?limit=">Salin URL</button>
+              <button class="btn-try" style="background:#38bdf8;color:#000">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: limit (opsional)</div>
+            <div class="input-row">
+              <input class="tester-input" style="border-color:rgba(56,189,248,.3)" id="input-liputan6-latest" type="text" placeholder="10"/>
+              <button class="btn-send" style="background:#38bdf8;color:#000" id="send-liputan6-latest" data-id="liputan6-latest" data-param="limit" data-endpoint="/api/news/liputan6-latest?limit=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-liputan6-latest"><div class="spinner" style="border-top-color:#38bdf8"></div> Mengambil berita...</div>
+            <div class="result-label" id="rlabel-liputan6-latest">Response</div>
+            <div class="result-box" style="color:#7dd3fc" id="result-liputan6-latest"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(56,189,248,.1);color:#38bdf8;border-color:rgba(56,189,248,.18)">GET</div>
+              <div class="ep-path">/api/news/liputan6-search</div>
+            </div>
+            <div class="ep-desc">Cari berita Liputan6 berdasarkan keyword. Gunakan parameter q untuk kata kunci.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(56,189,248,.07);border-color:rgba(56,189,248,.2);color:#38bdf8" data-path="/api/news/liputan6-search?q=">Salin URL</button>
+              <button class="btn-try" style="background:#38bdf8;color:#000">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: q</div>
+            <div class="input-row">
+              <input class="tester-input" style="border-color:rgba(56,189,248,.3)" id="input-liputan6-search" type="text" placeholder="politik"/>
+              <button class="btn-send" style="background:#38bdf8;color:#000" id="send-liputan6-search" data-id="liputan6-search" data-param="q" data-endpoint="/api/news/liputan6-search?q=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-liputan6-search"><div class="spinner" style="border-top-color:#38bdf8"></div> Mencari berita...</div>
+            <div class="result-label" id="rlabel-liputan6-search">Response</div>
+            <div class="result-box" style="color:#7dd3fc" id="result-liputan6-search"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ AI ══ -->
+    <div class="cat-card" style="--cat-ac:#34d399">
+      <div class="cat-header">
+        <div class="cat-icon-wrap" style="background:rgba(52,211,153,.08)">🤖</div>
+        <div class="cat-meta">
+          <div class="cat-title">AI</div>
+          <div class="cat-sub">GPT Online · dan lainnya</div>
+        </div>
+        <div class="cat-badge" style="background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)">3 endpoint</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="ep-body">
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(52,211,153,.1);color:#34d399;border-color:rgba(52,211,153,.18)">GET</div>
+              <div class="ep-path">/api/ai/gpt</div>
+            </div>
+            <div class="ep-desc">Tanya jawab dengan GPT Online. Tidak perlu API key.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(52,211,153,.07);border-color:rgba(52,211,153,.2);color:#34d399" data-path="/api/ai/gpt?text=">Salin URL</button>
+              <button class="btn-try" style="background:#34d399;color:#000">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: text</div>
+            <div class="input-row">
+              <input class="tester-input" style="border-color:rgba(52,211,153,.3)" id="input-gpt" type="text" placeholder="Halo apa kabar?"/>
+              <button class="btn-send" style="background:#34d399;color:#000" id="send-gpt" data-id="gpt" data-param="text" data-endpoint="/api/ai/gpt?text=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-gpt"><div class="spinner" style="border-top-color:#34d399"></div> Menunggu jawaban...</div>
+            <div class="result-label" id="rlabel-gpt">Response</div>
+            <div class="result-box" style="color:#6ee7b7" id="result-gpt"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(52,211,153,.1);color:#34d399;border-color:rgba(52,211,153,.18)">GET</div>
+              <div class="ep-path">/api/ai/openai</div>
+            </div>
+            <div class="ep-desc">Tanya jawab dengan OpenAI GPT. Jawaban selalu dalam Bahasa Indonesia.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(52,211,153,.07);border-color:rgba(52,211,153,.2);color:#34d399" data-path="/api/ai/openai?text=">Salin URL</button>
+              <button class="btn-try" style="background:#34d399;color:#000">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: text</div>
+            <div class="input-row">
+              <input class="tester-input" style="border-color:rgba(52,211,153,.3)" id="input-openai" type="text" placeholder="Halo apa kabar?"/>
+              <button class="btn-send" style="background:#34d399;color:#000" id="send-openai" data-id="openai" data-param="text" data-endpoint="/api/ai/openai?text=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-openai"><div class="spinner" style="border-top-color:#34d399"></div> Menunggu jawaban...</div>
+            <div class="result-label" id="rlabel-openai">Response</div>
+            <div class="result-box" style="color:#6ee7b7" id="result-openai"></div>
+          </div>
+        </div>
+
+        <div class="ep-card">
+          <div class="ep-head">
+            <div class="ep-top">
+              <div class="method" style="background:rgba(52,211,153,.1);color:#34d399;border-color:rgba(52,211,153,.18)">GET</div>
+              <div class="ep-path">/api/ai/editimage</div>
+            </div>
+            <div class="ep-desc">Edit gambar menggunakan AI. Masukkan URL gambar dan prompt instruksi editing.</div>
+            <div class="ep-btns">
+              <button class="btn-copy-ep" style="background:rgba(52,211,153,.07);border-color:rgba(52,211,153,.2);color:#34d399" data-path="/api/ai/editimage?url=&prompt=">Salin URL</button>
+              <button class="btn-try" style="background:#34d399;color:#000">&#9654; Coba</button>
+            </div>
+          </div>
+          <div class="tester">
+            <div class="tester-label">Parameter: url &amp; prompt</div>
+            <div class="input-row">
+              <input class="tester-input" style="border-color:rgba(52,211,153,.3)" id="input-editimage" type="text" placeholder="https://example.com/image.jpg"/>
+            </div>
+            <div class="input-row" style="margin-top:8px">
+              <input class="tester-input" style="border-color:rgba(52,211,153,.3)" id="input-editimage-prompt" type="text" placeholder="remove background"/>
+              <button class="btn-send" style="background:#34d399;color:#000" id="send-editimage" data-id="editimage" data-param="url" data-endpoint="/api/ai/editimage?url=">Kirim</button>
+            </div>
+            <div class="loading" id="loading-editimage"><div class="spinner" style="border-top-color:#34d399"></div> Memproses gambar...</div>
+            <div class="result-label" id="rlabel-editimage">Response</div>
+            <div class="result-box" style="color:#6ee7b7" id="result-editimage"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sec" style="margin-top:40px">Dokumentasi</div>
+  <div class="docs">
+    <div class="tabs">
+      <button class="tab on" data-pane="cara">Cara Pakai</button>
+      <button class="tab" data-pane="contoh">Contoh Request</button>
+      <button class="tab" data-pane="resp">Contoh Response</button>
+    </div>
+    <div class="pane on" id="cara">
+      <p>API ini <b>gratis</b> dan tidak perlu API key. Langsung akses dari browser, Postman, atau kode kamu.</p>
+      <ol>
+        <li><b>Pilih kategori</b> endpoint di atas lalu klik untuk expand</li>
+        <li>Klik <b>&#9654; Coba</b> untuk test langsung di sini</li>
+        <li>Atau klik <b>Salin URL</b> untuk copy endpoint nya</li>
+        <li><b>Terima response JSON</b> dan gunakan datanya</li>
+      </ol>
+      <p style="margin-top:12px">Base URL:</p>
+      <div class="code"><pre id="code-base">https://danzz-api.online</pre><button class="copy-btn" data-target="code-base">Salin</button></div>
+    </div>
+    <div class="pane" id="contoh">
+      <p><b>Downloader — TikTok:</b></p>
+      <div class="code"><pre id="code-r1">GET /api/downloader/tiktok?url=https://vt.tiktok.com/ZS9qqmN16/</pre><button class="copy-btn" data-target="code-r1">Salin</button></div>
+      <p style="margin-top:12px"><b>Stalk — TikTok:</b></p>
+      <div class="code"><pre id="code-r2">GET /api/stalker/stalk-tiktok?username=khaby.lame</pre><button class="copy-btn" data-target="code-r2">Salin</button></div>
+    </div>
+    <div class="pane" id="resp">
+      <p><b>Contoh Response — Stalk TikTok:</b></p>
+      <div class="code"><pre id="code-resp"><span class="jbr">{</span>
+  <span class="jk">"status"</span>: <span class="jb">true</span>,
+  <span class="jk">"creator"</span>: <span class="js">"Danzz"</span>,
+  <span class="jk">"result"</span>: <span class="jbr">{</span>
+    <span class="jk">"username"</span>:  <span class="js">"khaby.lame"</span>,
+    <span class="jk">"nickname"</span>:  <span class="js">"Khaby Lame"</span>,
+    <span class="jk">"verified"</span>:  <span class="jb">true</span>,
+    <span class="jk">"private"</span>:   <span class="jb">false</span>,
+    <span class="jk">"region"</span>:    <span class="js">"IT"</span>,
+    <span class="jk">"signature"</span>: <span class="js">"Bio..."</span>,
+    <span class="jk">"stats"</span>: <span class="jbr">{</span>
+      <span class="jk">"followers"</span>: <span class="jb">162000000</span>,
+      <span class="jk">"following"</span>: <span class="jb">78</span>,
+      <span class="jk">"hearts"</span>:    <span class="jb">2400000000</span>,
+      <span class="jk">"videos"</span>:    <span class="jb">1100</span>
+    <span class="jbr">}</span>
+  <span class="jbr">}</span>
+<span class="jbr">}</span></pre><button class="copy-btn" data-target="code-resp">Salin</button></div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Dibuat dengan &#10084;&#65039; oleh <span>Danzz</span></p>
+    <p style="margin-top:3px">&#169; 2026 DanzzAPI &mdash; Gratis untuk digunakan</p>
+  </footer>
+
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  // Avatar
+  var ava = document.getElementById('ava-owner');
+  if (ava) {
+    var img = new Image();
+    img.alt = 'Danzz';
+    img.onload = function() { ava.innerHTML = ''; ava.appendChild(img); };
+    img.src = 'https://api.telegram.org/file/bot8601632315:AAHzh8KKi4gyOrpd-a59-0vLJiVSWwFnEZI/documents/file_5';
+  }
+
+  // Category accordion
+  document.querySelectorAll('.cat-header').forEach(function(hdr) {
+    hdr.addEventListener('click', function(e) {
+      // Jangan toggle kalau yang diklik adalah tombol di dalam header (misal btn-try, btn-copy)
+      if (e.target.closest('button')) return;
+      var card = hdr.closest('.cat-card');
+      var isOpen = card.classList.contains('open');
+      document.querySelectorAll('.cat-card').forEach(function(c) { c.classList.remove('open'); });
+      document.querySelectorAll('.tester').forEach(function(t) { t.classList.remove('open'); });
+      document.querySelectorAll('.btn-try').forEach(function(b) { b.innerHTML = '&#9654; Coba'; });
+      if (!isOpen) card.classList.add('open');
+    });
+  });
+
+  // Docs tabs
+  document.querySelectorAll('.tab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var id = btn.getAttribute('data-pane');
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('on'); });
+      document.querySelectorAll('.pane').forEach(function(p) { p.classList.remove('on'); });
+      btn.classList.add('on');
+      var p = document.getElementById(id);
+      if (p) p.classList.add('on');
+    });
+  });
+
+  // Copy helper
+  function copyText(text, btn, label) {
+    var ok = function() { btn.textContent = '✓ Disalin!'; setTimeout(function(){ btn.textContent = label; }, 1400); };
+    var fail = function() { btn.textContent = '✗ Gagal'; setTimeout(function(){ btn.textContent = label; }, 1400); };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok).catch(function(){ fb(text,ok,fail); }); }
+      else { fb(text,ok,fail); }
+    } catch(e) { fb(text,ok,fail); }
+  }
+  function fb(text, ok, fail) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      document.execCommand('copy') ? ok() : fail();
+      document.body.removeChild(ta);
+    } catch(e) { fail(); }
+  }
+
+  // Copy code blocks
+  document.querySelectorAll('.copy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var el = document.getElementById(btn.getAttribute('data-target'));
+      if (el) copyText((el.innerText || el.textContent).trim(), btn, 'Salin');
+    });
+  });
+
+  // Copy endpoint URL
+  document.querySelectorAll('.btn-copy-ep').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      copyText('https://danzz-api.online' + (btn.getAttribute('data-path')||''), btn, 'Salin URL');
+    });
+  });
+
+  // Toggle tester (untuk semua KECUALI tebakkata)
+  document.querySelectorAll('.btn-try:not(.btn-try-tebakkata)').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var card = btn.closest('.ep-card');
+      var catCard = btn.closest('.cat-card');
+      var t = card && card.querySelector('.tester');
+      if (!t) return;
+      var wasOpen = t.classList.contains('open');
+      document.querySelectorAll('.tester').forEach(function(x) { x.classList.remove('open'); });
+      document.querySelectorAll('.btn-try').forEach(function(b) { b.innerHTML = '&#9654; Coba'; });
+      if (!wasOpen) {
+        // Pastikan cat-card terbuka
+        document.querySelectorAll('.cat-card').forEach(function(c) { c.classList.remove('open'); });
+        if (catCard) catCard.classList.add('open');
+        t.classList.add('open');
+        btn.textContent = '✕ Tutup';
+      }
+    });
+  });
+
+  // Auto-fetch tebakkata when tester opens
+  document.querySelectorAll('.btn-try-tebakkata').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var card = btn.closest('.ep-card');
+      var catCard = btn.closest('.cat-card');
+      var t = card && card.querySelector('.tester');
+      if (!t) return;
+      var wasOpen = t.classList.contains('open');
+      document.querySelectorAll('.tester').forEach(function(x) { x.classList.remove('open'); });
+      document.querySelectorAll('.btn-try').forEach(function(b) { b.innerHTML = '&#9654; Coba'; });
+      if (!wasOpen) {
+        // Pastikan cat-card terbuka
+        document.querySelectorAll('.cat-card').forEach(function(c) { c.classList.remove('open'); });
+        if (catCard) catCard.classList.add('open');
+        t.classList.add('open');
+        btn.textContent = '✕ Tutup';
+        sendTebakkata();
+      }
+    });
+  });
+
+  function sendTebakkata() {
+    var box = document.getElementById('result-tebakkata');
+    var ld  = document.getElementById('loading-tebakkata');
+    var rl  = document.getElementById('rlabel-tebakkata');
+    var sb  = document.getElementById('send-tebakkata');
+    if (!box || !ld || !rl) return;
+    if (sb) sb.disabled = true;
+    ld.classList.add('show');
+    box.classList.remove('show','err');
+    rl.classList.remove('show');
+    fetch('https://danzz-api.online/api/game/tebakkata')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        box.textContent = JSON.stringify(data, null, 2);
+        box.classList.add('show');
+        if (!data.status) box.classList.add('err');
+        rl.classList.add('show');
+      })
+      .catch(function(e){
+        box.textContent = 'Error: ' + e.message;
+        box.classList.add('show','err');
+        rl.classList.add('show');
+      })
+      .finally(function(){
+        if (sb) sb.disabled = false;
+        ld.classList.remove('show');
+      });
+  }
+
+  document.getElementById('send-tebakkata') && document.getElementById('send-tebakkata').addEventListener('click', sendTebakkata);
+
+  // Send request
+  var imageEndpoints = ['brat', 'removebg', 'iqc', 'editimage'];
+  var videoEndpoints = ['hd-video'];
+  var binaryVideoEndpoints = ['brat-video'];
+
+  function sendReq(id) {
+    var sb  = document.getElementById('send-' + id);
+    var param = sb ? (sb.getAttribute('data-param') || 'url') : 'url';
+    var ep    = sb ? sb.getAttribute('data-endpoint') : null;
+    if (!ep) ep = '/api/' + id + '?' + param + '=';
+    var inp = document.getElementById('input-' + id);
+    var box = document.getElementById('result-' + id);
+    var ld  = document.getElementById('loading-' + id);
+    var rl  = document.getElementById('rlabel-' + id);
+    if (!inp || !box || !ld || !rl) return;
+    var val = inp.value.trim();
+    if (!val) { inp.style.borderColor = 'var(--ac3)'; setTimeout(function(){ inp.style.borderColor=''; }, 900); return; }
+    if (sb) sb.disabled = true;
+    ld.classList.add('show');
+    box.classList.remove('show','err');
+    rl.classList.remove('show');
+
+    // iqc: tambah time param kalau ada
+    if (id === 'iqc') {
+      var timeVal = document.getElementById('input-iqc-time') ? document.getElementById('input-iqc-time').value.trim() : '';
+      ep = '/api/maker/iqc?text=';
+      var fullUrl = 'https://danzz-api.online' + ep + encodeURIComponent(val) + (timeVal ? '&time=' + encodeURIComponent(timeVal) : '');
+    } else if (id === 'editimage') {
+      var promptVal = document.getElementById('input-editimage-prompt') ? document.getElementById('input-editimage-prompt').value.trim() : '';
+      var fullUrl = 'https://danzz-api.online/api/ai/editimage?url=' + encodeURIComponent(val) + (promptVal ? '&prompt=' + encodeURIComponent(promptVal) : '');
+      fetch(fullUrl)
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if (data.status && data.result && data.result.image) {
+            box.innerHTML = '';
+            var imgEl = document.createElement('img');
+            imgEl.style.cssText = 'max-width:100%;max-height:300px;border-radius:8px;display:block;margin:0 auto';
+            imgEl.src = data.result.image;
+            imgEl.onload = function() { box.classList.add('show'); rl.classList.add('show'); };
+            imgEl.onerror = function() { box.textContent = 'Error: Gagal memuat gambar'; box.classList.add('show','err'); rl.classList.add('show'); };
+            box.appendChild(imgEl);
+          } else {
+            box.textContent = JSON.stringify(data, null, 2);
+            box.classList.add('show', data.status ? '' : 'err');
+            rl.classList.add('show');
+          }
+        })
+        .catch(function(e){ box.textContent = 'Error: ' + e.message; box.classList.add('show','err'); rl.classList.add('show'); })
+        .finally(function(){ if (sb) sb.disabled = false; ld.classList.remove('show'); });
+      return;
+    } else {
+      var fullUrl = 'https://danzz-api.online' + ep + encodeURIComponent(val);
+    }
+
+    if (binaryVideoEndpoints.includes(id)) {
+      // Tampilkan kayak sticker gerak: autoplay, loop, muted, no controls
+      box.innerHTML = '';
+      var vidEl = document.createElement('video');
+      vidEl.autoplay = true;
+      vidEl.loop = true;
+      vidEl.muted = true;
+      vidEl.playsInline = true;
+      vidEl.controls = false;
+      vidEl.style.cssText = 'max-width:160px;max-height:160px;border-radius:12px;display:block;margin:0 auto;object-fit:contain';
+      vidEl.src = fullUrl;
+      vidEl.onloadeddata = function() {
+        vidEl.play();
+        box.classList.add('show');
+        rl.classList.add('show');
+        if (sb) sb.disabled = false;
+        ld.classList.remove('show');
+      };
+      vidEl.onerror = function() {
+        box.innerHTML = '';
+        box.textContent = 'Error: Gagal memuat video';
+        box.classList.add('show','err');
+        rl.classList.add('show');
+        if (sb) sb.disabled = false;
+        ld.classList.remove('show');
+      };
+      box.appendChild(vidEl);
+    } else if (imageEndpoints.includes(id)) {
+      // Tampilin sebagai gambar
+      box.innerHTML = '';
+      var imgEl = document.createElement('img');
+      imgEl.style.cssText = 'max-width:100%;max-height:200px;border-radius:8px;display:block;margin:0 auto';
+      imgEl.onload = function() {
+        box.classList.add('show');
+        rl.classList.add('show');
+        if (sb) sb.disabled = false;
+        ld.classList.remove('show');
+      };
+      imgEl.onerror = function() {
+        box.innerHTML = '';
+        box.textContent = 'Error: Gagal memuat gambar';
+        box.classList.add('show','err');
+        rl.classList.add('show');
+        if (sb) sb.disabled = false;
+        ld.classList.remove('show');
+      };
+      imgEl.src = fullUrl;
+      box.appendChild(imgEl);
+    } else if (videoEndpoints.includes(id)) {
+      fetch(fullUrl)
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          box.innerHTML = '';
+          if (data.status && data.result && data.result.url) {
+            var a = document.createElement('a');
+            a.href = data.result.url;
+            a.target = '_blank';
+            a.style.cssText = 'color:#a78bfa;word-break:break-all;font-size:.75rem';
+            a.textContent = '▶ Klik untuk lihat video HD';
+            box.appendChild(a);
+          } else {
+            box.textContent = JSON.stringify(data, null, 2);
+            if (!data.status) box.classList.add('err');
+          }
+          box.classList.add('show');
+          rl.classList.add('show');
+        })
+        .catch(function(e){
+          box.textContent = 'Error: ' + e.message;
+          box.classList.add('show','err');
+          rl.classList.add('show');
+        })
+        .finally(function(){
+          if (sb) sb.disabled = false;
+          ld.classList.remove('show');
+        });
+    } else {
+      fetch(fullUrl)
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          box.textContent = JSON.stringify(data, null, 2);
+          box.classList.add('show');
+          if (!data.status) box.classList.add('err');
+          rl.classList.add('show');
+        })
+        .catch(function(e){
+          box.textContent = 'Error: ' + e.message;
+          box.classList.add('show','err');
+          rl.classList.add('show');
+        })
+        .finally(function(){
+          if (sb) sb.disabled = false;
+          ld.classList.remove('show');
+        });
+    }
+  }
+
+  document.querySelectorAll('.btn-send').forEach(function(btn) {
+    btn.addEventListener('click', function() { var id = btn.getAttribute('data-id'); if(id) sendReq(id); });
+  });
+  document.querySelectorAll('.tester-input').forEach(function(inp) {
+    inp.addEventListener('keydown', function(e) { if(e.key==='Enter') sendReq(inp.id.replace('input-','')); });
+  });
+
+  // Counter
+  var el = document.getElementById('reqCount');
+  if (el) {
+    var target=1234, v=0, step=target/(1500/16);
+    var t = setInterval(function(){
+      v += step;
+      if (v >= target) { el.innerHTML = '1,234<span class="ac">+</span>'; clearInterval(t); return; }
+      el.innerHTML = Math.floor(v).toLocaleString() + '<span class="ac">+</span>';
+    }, 16);
+  }
+
+});
+</script>
+</body>
+</html>
