@@ -1,12 +1,9 @@
 const axios = require('axios');
 
 const meta = {
-  param: 'query',
-  desc: 'Search foto/video dari Pinterest (?query=keyword)',
-  placeholder: 'aesthetic room',
-  params: [
-    { name: 'query', placeholder: 'aesthetic room' }
-  ]
+  param: 'keyword',
+  desc: 'Search foto/video dari Pinterest (?keyword=keyword)',
+  placeholder: 'aesthetic room'
 }
 
 let cachedSession = null
@@ -32,22 +29,20 @@ async function getSession() {
   return cachedSession
 }
 
-async function pinterestSearch(query, options = {}) {
-  const { limit = 25, scope = 'pins', bookmark = null } = options
+async function searchPinterest(query) {
   const session = await getSession()
 
   const data = {
     options: {
       query,
-      scope,
-      page_size: limit,
-      refine_search_with_filters: true,
-      ...(bookmark ? { bookmarks: [bookmark] } : {})
+      scope: 'pins',
+      page_size: 25,
+      refine_search_with_filters: true
     },
     context: {}
   }
 
-  const sourceUrl = `/search/${scope}/?q=${encodeURIComponent(query)}`
+  const sourceUrl = `/search/pins/?q=${encodeURIComponent(query)}`
   const { data: json } = await axios.get('https://id.pinterest.com/resource/BaseSearchResource/get/', {
     params: {
       source_url: sourceUrl,
@@ -75,7 +70,7 @@ async function pinterestSearch(query, options = {}) {
 
   const arr = Array.isArray(payload) ? payload : payload.results || []
 
-  const results = arr.filter(x => x?.id).map(pin => ({
+  return arr.filter(x => x?.id).map(pin => ({
     title: pin.title || pin.grid_title || '',
     type: pin.videos?.video_list ? 'video' : 'photo',
     image: pin.images?.orig?.url || pin.images?.['736x']?.url || null,
@@ -87,23 +82,20 @@ async function pinterestSearch(query, options = {}) {
     fullName: pin.pinner?.full_name || null,
     pinUrl: `https://id.pinterest.com/pin/${pin.id}/`
   }))
-
-  return { bookmark: payload.bookmark || null, results }
 }
 
 async function handler(req, res) {
-  const query = req.query.query || req.query.q || req.query.text
+  const query = req.query.keyword || req.query.query || req.query.q || req.query.text
 
-  if (!query) return res.status(400).json({ status: false, message: 'Parameter ?query= wajib diisi' })
+  if (!query) return res.status(400).json({ status: false, message: 'Parameter ?keyword= wajib diisi' })
 
   try {
-    const { results, bookmark } = await pinterestSearch(query)
+    const results = await searchPinterest(query)
     return res.json({
       status: true,
       creator: 'Danzz',
       query,
       total: results.length,
-      bookmark,
       results
     })
   } catch (err) {
