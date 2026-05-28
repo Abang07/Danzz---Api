@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Danzz API</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#080b11;--card:#121929;--border:#1e2a40;--ac:#4fffb0;--ac2:#4f8fff;--ac3:#ff4f9b;--text:#c9d4f0;--muted:#4a5578}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,255,176,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(79,255,176,.02) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.blob{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px)}
+.blob1{width:500px;height:500px;top:-150px;left:-150px;background:rgba(79,255,176,.05);animation:bm 10s ease-in-out infinite alternate}
+.blob2{width:400px;height:400px;bottom:-100px;right:-100px;background:rgba(79,143,255,.05);animation:bm 10s ease-in-out infinite alternate-reverse}
+@keyframes bm{0%{transform:translate(0,0) scale(1)}100%{transform:translate(50px,40px) scale(1.15)}}
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 16px 80px}
+header{text-align:center;padding:56px 16px 40px;animation:fadeD .6s ease both}
+@keyframes fadeD{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeU{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.badge{display:inline-flex;align-items:center;gap:7px;background:rgba(79,255,176,.07);border:1px solid rgba(79,255,176,.18);color:var(--ac);padding:5px 16px;border-radius:999px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px}
+.dot{width:6px;height:6px;background:var(--ac);border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.6)}}
+header h1{font-size:clamp(2rem,8vw,3.4rem);font-weight:800;color:#fff;line-height:1.1;margin-bottom:10px}
+header h1 .hl{color:var(--ac)}
+header p{color:var(--muted);font-size:.9rem;max-width:400px;margin:0 auto 22px;line-height:1.7}
+.creator-row{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);padding:11px 18px;border-radius:14px;max-width:340px;margin:0 auto}
+.ava{width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;border:2px solid var(--ac);background:linear-gradient(135deg,var(--ac),var(--ac2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#000}
+.ava img{width:100%;height:100%;object-fit:cover;display:block}
+.creator-info{text-align:left;flex:1;min-width:0}
+.creator-info .name{font-weight:700;color:#fff;font-size:.88rem}
+.creator-info .role{color:var(--muted);font-size:.7rem}
+.socmed{display:flex;gap:5px}
+.socmed a{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:7px;font-size:.7rem;transition:all .2s}
+.socmed a:hover{color:var(--ac);border-color:var(--ac)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:32px 0 0;animation:fadeU .6s .1s ease both}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 10px;text-align:center;transition:border-color .2s,transform .2s}
+.stat:hover{border-color:rgba(79,255,176,.25);transform:translateY(-3px)}
+.stat .num{font-family:'JetBrains Mono',monospace;font-size:1.55rem;font-weight:700;color:#fff}
+.stat .num .ac{color:var(--ac)}
+.stat .lbl{color:var(--muted);font-size:.65rem;margin-top:4px;text-transform:uppercase;letter-spacing:.07em}
+.sec{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);display:flex;align-items:center;gap:10px;margin:40px 0 12px}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+.cat-list{display:flex;flex-direction:column;gap:10px;animation:fadeU .5s .15s ease both}
+.cat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s}
+.cat-header{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .15s}
+.cat-header:hover{background:rgba(255,255,255,.02)}
+.cat-icon-wrap{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.cat-meta{flex:1;min-width:0}
+.cat-title{font-weight:700;font-size:.9rem;color:#fff}
+.cat-sub{font-size:.7rem;color:var(--muted);margin-top:2px}
+.cat-badge{font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:7px;flex-shrink:0}
+.cat-arrow{color:var(--muted);font-size:.75rem;flex-shrink:0;transition:transform .25s}
+.cat-card.open .cat-arrow{transform:rotate(180deg)}
+.ep-body{display:none;border-top:1px solid var(--border)}
+.cat-card.open .ep-body{display:block;animation:slideDown .25s ease both}
+.ep-card{border-bottom:1px solid var(--border)}
+.ep-card:last-child{border-bottom:none}
+.ep-head{padding:14px 16px 12px}
+.ep-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.method{font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:5px;flex-shrink:0}
+.ep-path{font-family:'JetBrains Mono',monospace;color:#fff;font-size:.82rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ep-desc{color:var(--muted);font-size:.78rem;margin-bottom:10px;line-height:1.5}
+.ep-btns{display:flex;gap:7px}
+.btn-copy-ep{font-size:.7rem;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;border:1px solid}
+.btn-try{border:none;font-size:.7rem;font-weight:800;padding:6px 14px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s}
+.tester{border-top:1px solid var(--border);padding:14px;display:none}
+.tester.open{display:block;animation:slideDown .2s ease both}
+.tester-label{font-size:.67rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.input-row{display:flex;gap:7px;margin-bottom:9px}
+.tester-input{flex:1;background:#07090f;border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.75rem;padding:9px 12px;border-radius:9px;outline:none;transition:border-color .18s;min-width:0}
+.tester-input::placeholder{color:var(--muted)}
+.btn-send{border:none;font-weight:800;font-size:.75rem;padding:9px 14px;border-radius:9px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;white-space:nowrap;flex-shrink:0}
+.btn-send:disabled{opacity:.45;cursor:not-allowed}
+.loading{display:none;align-items:center;gap:7px;color:var(--muted);font-size:.76rem;margin-bottom:7px}
+.loading.show{display:flex}
+.spinner{width:13px;height:13px;border:2px solid var(--border);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result-label{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:none}
+.result-label.show{display:block}
+.result-box{background:#07090f;border:1px solid var(--border);border-radius:9px;padding:12px 13px;font-family:'JetBrains Mono',monospace;font-size:.73rem;line-height:1.8;white-space:pre-wrap;word-break:break-all;max-height:240px;overflow-y:auto;display:none}
+.result-box.show{display:block}
+.result-box.err{color:#fca5a5}
+.skeleton{background:linear-gradient(90deg,var(--card) 25%,rgba(255,255,255,.04) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:12px;height:64px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.docs{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:0;animation:fadeU .5s .25s ease both}
+.tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto}
+.tab{padding:11px 16px;font-size:.78rem;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;border-bottom:2px solid transparent;transition:color .18s,border-color .18s;white-space:nowrap}
+.tab.on{color:var(--ac);border-bottom-color:var(--ac)}
+.pane{display:none;padding:18px}
+.pane.on{display:block}
+.pane p{color:var(--muted);font-size:.83rem;line-height:1.75;margin-bottom:9px}
+.pane p b{color:var(--text)}
+.pane ol{padding-left:16px;color:var(--muted);font-size:.83rem;line-height:1.9}
+.pane ol li b{color:var(--text)}
+.code{background:#07090f;border:1px solid var(--border);border-radius:9px;padding:12px 13px;margin:9px 0;position:relative}
+.code pre{font-family:'JetBrains Mono',monospace;font-size:.73rem;color:#6ee7b7;line-height:1.8;white-space:pre-wrap;word-break:break-all;padding-right:60px}
+.copy-btn{position:absolute;top:9px;right:9px;background:rgba(79,255,176,.13);border:1px solid rgba(79,255,176,.25);color:var(--ac);font-size:.64rem;font-weight:700;padding:3px 10px;border-radius:5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;white-space:nowrap}
+.copy-btn:hover{background:rgba(79,255,176,.25)}
+.jk{color:#7dd3fc}.js{color:#fca5a5}.jb{color:#c084fc}.jbr{color:#4fffb0}
+footer{text-align:center;padding:36px 16px 0;color:var(--muted);font-size:.74rem;line-height:1.8}
+footer span{color:var(--ac)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+</style>
+</head>
+<body>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="wrap">
+
+  <header>
+    <div class="badge"><span class="dot"></span> API Online &amp; Ready</div>
+    <h1>Danzz<span class="hl">API</span></h1>
+    <p>REST API gratis, cepat, dan mudah digunakan. Tinggal hit endpoint, langsung dapat data.</p>
+    <div class="creator-row">
+      <div class="ava" id="ava-owner">D</div>
+      <div class="creator-info">
+        <div class="name">Danzz</div>
+        <div class="role">Creator &amp; Developer</div>
+      </div>
+      <div class="socmed">
+        <a href="https://github.com/Abang07" target="_blank">GitHub</a>
+        <a href="https://www.instagram.com/dannn.15_" target="_blank">Instagram</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="num" id="reqCount">0<span class="ac">+</span></div>
+      <div class="lbl">Total Request</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="epCount"><span class="ac">-</span></div>
+      <div class="lbl">Endpoint Aktif</div>
+    </div>
+  </div>
+
+  <div class="sec">Endpoints</div>
+  <div class="cat-list" id="cat-list">
+    <div class="skeleton"></div>
+    <div class="skeleton" style="height:48px;opacity:.6;margin-top:2px"></div>
+    <div class="skeleton" style="height:48px;opacity:.35;margin-top:2px"></div>
+  </div>
+
+  <div class="sec" style="margin-top:40px">Dokumentasi</div>
+  <div class="docs">
+    <div class="tabs">
+      <button class="tab on" data-pane="cara">Cara Pakai</button>
+      <button class="tab" data-pane="contoh">Contoh Request</button>
+      <button class="tab" data-pane="resp">Contoh Response</button>
+    </div>
+    <div class="pane on" id="cara">
+      <p>API ini <b>gratis</b> dan tidak perlu API key. Langsung akses dari browser, Postman, atau kode kamu.</p>
+      <ol>
+        <li><b>Pilih kategori</b> endpoint di atas lalu klik untuk expand</li>
+        <li>Klik <b>&#9654; Coba</b> untuk test langsung di sini</li>
+        <li>Atau klik <b>Salin URL</b> untuk copy endpoint nya</li>
+        <li><b>Terima response JSON</b> dan gunakan datanya</li>
+      </ol>
+      <p style="margin-top:12px">Base URL:</p>
+      <div class="code"><pre id="code-base">https://danzz-api.online</pre><button class="copy-btn" data-target="code-base">Salin</button></div>
+    </div>
+    <div class="pane" id="contoh">
+      <p><b>Downloader — TikTok:</b></p>
+      <div class="code"><pre id="code-r1">GET /api/downloader/tiktok?url=https://vt.tiktok.com/ZS9qqmN16/</pre><button class="copy-btn" data-target="code-r1">Salin</button></div>
+      <p style="margin-top:12px"><b>Stalk — TikTok:</b></p>
+      <div class="code"><pre id="code-r2">GET /api/stalker/stalk-tiktok?username=khaby.lame</pre><button class="copy-btn" data-target="code-r2">Salin</button></div>
+    </div>
+    <div class="pane" id="resp">
+      <p><b>Contoh Response — Stalk TikTok:</b></p>
+      <div class="code"><pre id="code-resp"><span class="jbr">{</span>
+  <span class="jk">"status"</span>: <span class="jb">true</span>,
+  <span class="jk">"creator"</span>: <span class="js">"Danzz"</span>,
+  <span class="jk">"result"</span>: <span class="jbr">{</span>
+    <span class="jk">"username"</span>: <span class="js">"khaby.lame"</span>,
+    <span class="jk">"followers"</span>: <span class="jb">162000000</span>
+  <span class="jbr">}</span>
+<span class="jbr">}</span></pre><button class="copy-btn" data-target="code-resp">Salin</button></div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Dibuat dengan &#10084;&#65039; oleh <span>Danzz</span></p>
+    <p style="margin-top:3px">&#169; 2026 DanzzAPI &mdash; Gratis untuk digunakan</p>
+  </footer>
+
+</div>
+<script>
+// ═══════════════════════════════
+// CONFIG TAMPILAN PER KATEGORI
+// Tambah kategori baru di sini kalau mau custom icon/warna.
+// Kalau tidak ada, pakai default hijau.
+// ═══════════════════════════════
+var CAT_CONFIG = {
+  downloader: { icon:'⬇️', color:'#4fffb0', rgb:'79,255,176',  tc:'#000', sub:'TikTok · Instagram · YouTube' },
+  stalker:    { icon:'🔍', color:'#4f8fff', rgb:'79,143,255',  tc:'#fff', sub:'Info profil sosial media' },
+  maker:      { icon:'🎨', color:'#ff4f9b', rgb:'255,79,155',  tc:'#fff', sub:'Brat Generator · dan lainnya' },
+  tools:      { icon:'🛠️', color:'#a78bfa', rgb:'167,139,250', tc:'#fff', sub:'Image Enhancer · dan lainnya' },
+  search:     { icon:'🔎', color:'#fb923c', rgb:'251,146,60',  tc:'#fff', sub:'Resep Masakan · dan lainnya' },
+  manga:      { icon:'📚', color:'#f97316', rgb:'249,115,22',  tc:'#fff', sub:'Webtoon · Komikindo · dan lainnya' },
+  game:       { icon:'🎮', color:'#facc15', rgb:'250,204,21',  tc:'#000', sub:'Tebak Kata · dan lainnya' },
+  news:       { icon:'📰', color:'#38bdf8', rgb:'56,189,248',  tc:'#000', sub:'Berita Terkini' },
+  ai:         { icon:'🤖', color:'#34d399', rgb:'52,211,153',  tc:'#000', sub:'GPT Online · dan lainnya' },
+};
+
+// Endpoint yang return binary image/video langsung (bukan JSON)
+var IMAGE_EPS     = ['brat','removebg','iqc','editimage'];
+var VIDEO_EPS     = ['hd-video'];
+var BINVIDEO_EPS  = ['brat-video'];
+// Endpoint tanpa input — auto fetch saat dibuka
+var NOPARAM_EPS   = ['tebakkata','quote'];
+
+function cfg(cat) {
+  return CAT_CONFIG[cat] || { icon:'🔗', color:'#4fffb0', rgb:'79,255,176', tc:'#000', sub:'' };
+}
+
+function epId(epPath) {
+  // /api/downloader/tiktok → tiktok
+  return epPath.split('/').pop();
+}
+
+function renderEp(ep, c) {
+  var id    = epId(ep.path);
+  var ph    = ep.placeholder || '';
+
+  // Deteksi multi-param: pakai ep.params (array) kalau ada
+  var multiParams = Array.isArray(ep.params) && ep.params.length > 1 ? ep.params : null;
+  var param = (ep.param !== undefined && ep.param !== null && ep.param !== '') ? ep.param : (multiParams ? multiParams[0].name : 'url');
+  var paramFirst = multiParams ? multiParams[0].name : param;
+
+  var isNP  = NOPARAM_EPS.indexOf(id) !== -1 || (ep.param === '' || ep.param === null || ep.param === undefined) && !multiParams;
+
+  // ── Build input fields ──
+  // Kalau multi-param generik (pakai ep.params), render semua sekaligus
+  var multiParamFields = '';
+  if (multiParams) {
+    // Semua input kecuali terakhir tanpa tombol, input terakhir + tombol Kirim
+    multiParams.forEach(function(p, i) {
+      var isLast = (i === multiParams.length - 1);
+      multiParamFields += '<div class="tester-label">Parameter: ' + p.name + '</div>'
+        + '<div class="input-row">'
+        + '<input class="tester-input" id="input-' + id + '-' + p.name + '" type="text" placeholder="' + (p.placeholder || '') + '"/>'
+        + (isLast
+          ? '<button class="btn-send" style="background:'+c.color+';color:'+c.tc+'" id="send-'+id+'" data-id="'+id+'" data-param="__multi__" data-endpoint="'+ep.path+'">Kirim</button>'
+          : '')
+        + '</div>';
+    });
+  }
+
+  // ── Extra fields untuk endpoint khusus (editimage, iqc, detik) ──
+  var extraFields = '';
+  if (id === 'editimage') {
+    extraFields = '<div class="tester-label" style="margin-top:7px">Parameter: url</div>'
+      + '<div class="input-row">'
+      + '<input class="tester-input" id="input-editimage-url" type="text" placeholder="https://example.com/foto.jpg"/>'
+      + '</div>';
+  }
+  if (id === 'iqc') {
+    extraFields = '<div class="tester-label" style="margin-top:7px">Parameter: time (opsional)</div>'
+      + '<div class="input-row">'
+      + '<input class="tester-input" id="input-iqc-time" type="text" placeholder="09.31"/>'
+      + '</div>';
+  }
+  if (id === 'jarak') {
+    extraFields = '<div class="tester-label" style="margin-top:7px">Parameter: to</div>'
+      + '<div class="input-row">'
+      + '<input class="tester-input" id="input-jarak-to" type="text" placeholder="Bandung"/>'
+      + '</div>';
+  }
+  if (id === 'detik') {
+    extraFields = '<div class="tester-label" style="margin-top:7px">Pilih Action</div>'
+      + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px">'
+      + ['latest','populer','search','detail'].map(function(a){
+          return '<button class="detik-action-btn" data-action="'+a+'" style="font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:7px;border:1px solid var(--border);background:rgba(56,189,248,.08);color:#38bdf8;cursor:pointer;font-family:Outfit,sans-serif;transition:all .18s">'+a+'</button>';
+        }).join('')
+      + '</div>'
+      + '<div id="detik-extra-url" style="display:none">'
+      + '<div class="tester-label">Parameter: url (untuk detail)</div>'
+      + '<div class="input-row">'
+      + '<input class="tester-input" id="input-detik-url" type="text" placeholder="https://news.detik.com/xxx"/>'
+      + '<button class="detik-send-btn" data-action="detail" style="border:none;font-weight:800;font-size:.75rem;padding:9px 14px;border-radius:9px;cursor:pointer;font-family:Outfit,sans-serif;white-space:nowrap;flex-shrink:0;background:#38bdf8;color:#000">Kirim</button>'
+      + '</div>'
+      + '</div>'
+      + '<div id="detik-extra-q" style="display:none">'
+      + '<div class="tester-label">Parameter: q (untuk search)</div>'
+      + '<div class="input-row">'
+      + '<input class="tester-input" id="input-detik-q" type="text" placeholder="kata kunci berita"/>'
+      + '<button class="detik-send-btn" data-action="search" style="border:none;font-weight:800;font-size:.75rem;padding:9px 14px;border-radius:9px;cursor:pointer;font-family:Outfit,sans-serif;white-space:nowrap;flex-shrink:0;background:#38bdf8;color:#000">Kirim</button>'
+      + '</div>'
+      + '</div>';
+  }
+
+  var testerBody = isNP
+    ? '<div class="loading" id="loading-'+id+'"><div class="spinner" style="border-top-color:'+c.color+'"></div> Mengambil data...</div>'
+    + '<div class="result-label" id="rlabel-'+id+'">Response</div>'
+    + '<div class="result-box" id="result-'+id+'" style="color:#6ee7b7"></div>'
+    + '<div style="margin-top:9px;display:flex;justify-content:flex-end">'
+    + '<button class="btn-send" style="background:'+c.color+';color:'+c.tc+'" id="send-'+id+'" data-id="'+id+'" data-param="" data-endpoint="'+ep.path+'">&#128260; Soal Baru</button>'
+    + '</div>'
+    : (id === 'detik'
+        ? extraFields
+        + '<div class="loading" id="loading-detik"><div class="spinner" style="border-top-color:'+c.color+'"></div> Mengambil data...</div>'
+        + '<div class="result-label" id="rlabel-detik">Response</div>'
+        + '<div class="result-box" id="result-detik" style="color:#6ee7b7"></div>'
+        : multiParams
+          ? multiParamFields
+          + '<div class="loading" id="loading-'+id+'"><div class="spinner" style="border-top-color:'+c.color+'"></div> Mengambil data...</div>'
+          + '<div class="result-label" id="rlabel-'+id+'">Response</div>'
+          + '<div class="result-box" id="result-'+id+'" style="color:#6ee7b7"></div>'
+          : '<div class="tester-label">Parameter: '+param+'</div>'
+          + '<div class="input-row">'
+          + '<input class="tester-input" id="input-'+id+'" type="text" placeholder="'+ph+'"/>'
+          + '<button class="btn-send" style="background:'+c.color+';color:'+c.tc+'" id="send-'+id+'" data-id="'+id+'" data-param="'+paramFirst+'" data-endpoint="'+ep.path+'?'+paramFirst+'=">Kirim</button>'
+          + '</div>'
+          + extraFields
+          + '<div class="loading" id="loading-'+id+'"><div class="spinner" style="border-top-color:'+c.color+'"></div> Mengambil data...</div>'
+          + '<div class="result-label" id="rlabel-'+id+'">Response</div>'
+          + '<div class="result-box" id="result-'+id+'" style="color:#6ee7b7"></div>'
+      );
+
+  return '<div class="ep-card" data-ep-id="'+id+'">'
+    + '<div class="ep-head">'
+    + '<div class="ep-top">'
+    + '<div class="method" style="background:rgba('+c.rgb+',.1);color:'+c.color+';border:1px solid rgba('+c.rgb+',.18)">GET</div>'
+    + '<div class="ep-path">'+ep.path+'</div>'
+    + '</div>'
+    + (ep.desc ? '<div class="ep-desc">'+ep.desc+'</div>' : '')
+    + '<div class="ep-btns">'
+    + '<button class="btn-copy-ep" style="background:rgba('+c.rgb+',.07);border:1px solid rgba('+c.rgb+',.2);color:'+c.color+'" data-path="'+(isNP ? ep.path : ep.path+'?'+paramFirst+'=')+'">Salin URL</button>'
+    + '<button class="btn-try'+(isNP?' btn-try-noparam':'')+'" style="background:'+c.color+';color:'+c.tc+'">&#9654; Coba</button>'
+    + '</div>'
+    + '</div>'
+    + '<div class="tester">'+testerBody+'</div>'
+    + '</div>';
+}
+
+function renderCat(cat, eps) {
+  var c = cfg(cat);
+  var epNames = eps.map(function(ep){ var n=ep.path.split('/').pop(); return n.charAt(0).toUpperCase()+n.slice(1); });
+  var sub = c.sub || (epNames.slice(0,2).join(' · ') + (epNames.length > 2 ? ' · dan lainnya' : ''));
+  return '<div class="cat-card" data-cat="'+cat+'">'
+    + '<div class="cat-header">'
+    + '<div class="cat-icon-wrap" style="background:rgba('+c.rgb+',.08)">'+c.icon+'</div>'
+    + '<div class="cat-meta">'
+    + '<div class="cat-title">'+cat.charAt(0).toUpperCase()+cat.slice(1)+'</div>'
+    + '<div class="cat-sub">'+sub+'</div>'
+    + '</div>'
+    + '<div class="cat-badge" style="background:rgba('+c.rgb+',.1);color:'+c.color+';border:1px solid rgba('+c.rgb+',.2)">'+eps.length+' endpoint</div>'
+    + '<div class="cat-arrow">▼</div>'
+    + '</div>'
+    + '<div class="ep-body">'+eps.map(function(ep){ return renderEp(ep, c); }).join('')+'</div>'
+    + '</div>';
+}
+
+// ═══════════════════════════════
+// FETCH /api/list & RENDER
+// ═══════════════════════════════
+function loadEndpoints() {
+  fetch('/api/list')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var list = data.endpoints || [];
+
+      // Kelompokkan per kategori dari path: /api/KATEGORI/nama
+      var grouped = {};
+      var order   = [];
+      list.forEach(function(ep) {
+        var parts = ep.path.replace(/^\/api\//, '').split('/');
+        var cat   = parts[0] || 'other';
+        if (!grouped[cat]) { grouped[cat] = []; order.push(cat); }
+        grouped[cat].push(ep);
+      });
+
+      var cl = document.getElementById('cat-list');
+      cl.innerHTML = order.map(function(cat) {
+        return renderCat(cat, grouped[cat]);
+      }).join('');
+
+      // Update counter
+      var epEl = document.getElementById('epCount');
+      if (epEl) epEl.innerHTML = '<span class="ac">'+list.length+'</span>';
+    })
+    .catch(function(err) {
+      console.error('[DanzzAPI] Gagal fetch /api/list:', err);
+      document.getElementById('cat-list').innerHTML =
+        '<div style="color:var(--muted);text-align:center;padding:32px;font-size:.82rem">⚠️ Gagal memuat endpoint. Periksa koneksi server.</div>';
+    });
+}
+
+// ═══════════════════════════════
+// SEND REQUEST
+// ═══════════════════════════════
+function sendReq(id) {
+  var sb    = document.getElementById('send-'+id);
+  var param = sb ? sb.getAttribute('data-param') : 'url';
+  var ep    = sb ? sb.getAttribute('data-endpoint') : '/api/'+id;
+  var inp   = document.getElementById('input-'+id);
+  var box   = document.getElementById('result-'+id);
+  var ld    = document.getElementById('loading-'+id);
+  var rl    = document.getElementById('rlabel-'+id);
+  if (!box || !ld || !rl) return;
+
+  var val = inp ? inp.value.trim() : '';
+  // Kalau ada input tapi kosong, highlight merah dan batal
+  // Tapi skip validasi ini untuk endpoint no-param (inp tidak ada)
+  if (inp && !val && param !== '__multi__') {
+    inp.style.borderColor = 'var(--ac3)';
+    setTimeout(function(){ inp.style.borderColor = ''; }, 900);
+    return;
+  }
+
+  // Handle multi-param generik (ep.params array)
+  if (param === '__multi__') {
+    // Kumpulkan semua input-{id}-{paramname} di ep-card ini
+    var epCardEl = document.getElementById('send-'+id);
+    epCardEl = epCardEl ? epCardEl.closest('.ep-card') : null;
+    var queryParts = [];
+    var hasEmpty = false;
+    if (epCardEl) {
+      epCardEl.querySelectorAll('.tester-input').forEach(function(inp2) {
+        // id format: input-{id}-{paramname}
+        var pname = inp2.id.replace('input-'+id+'-', '');
+        var pval = inp2.value.trim();
+        if (!pval) {
+          inp2.style.borderColor = 'var(--ac3)';
+          setTimeout(function(){ inp2.style.borderColor = ''; }, 900);
+          hasEmpty = true;
+        } else {
+          queryParts.push(encodeURIComponent(pname) + '=' + encodeURIComponent(pval));
+        }
+      });
+    }
+    if (hasEmpty) { if (sb) sb.disabled = false; return; }
+    if (sb) sb.disabled = true;
+    ld.classList.add('show');
+    box.classList.remove('show','err');
+    rl.classList.remove('show');
+    box.innerHTML = '';
+    var multiUrl = 'https://danzz-api.online' + ep + (queryParts.length ? '?' + queryParts.join('&') : '');
+    fetch(multiUrl).then(function(r){ return r.json(); }).then(function(data) {
+      box.textContent = JSON.stringify(data, null, 2);
+      box.classList.add('show'); if (!data.status) box.classList.add('err');
+      rl.classList.add('show'); if (sb) sb.disabled = false; ld.classList.remove('show');
+    }).catch(function(e){
+      box.textContent = 'Error: '+e.message; box.classList.add('show','err');
+      rl.classList.add('show'); if (sb) sb.disabled = false; ld.classList.remove('show');
+    });
+    return;
+  }
+
+  if (sb) sb.disabled = true;
+  ld.classList.add('show');
+  box.classList.remove('show','err');
+  rl.classList.remove('show');
+  box.innerHTML = '';
+
+  var base = 'https://danzz-api.online';
+  var fullUrl = base + ep + (val ? encodeURIComponent(val) : '');
+
+  // editimage: 2 input
+  if (id === 'editimage') {
+    var urlVal = document.getElementById('input-editimage-url');
+    urlVal = urlVal ? urlVal.value.trim() : '';
+    if (!urlVal) {
+      var ui = document.getElementById('input-editimage-url');
+      if (ui) { ui.style.borderColor='var(--ac3)'; setTimeout(function(){ ui.style.borderColor=''; },900); }
+      if (sb) sb.disabled = false; ld.classList.remove('show'); return;
+    }
+    fullUrl = base + '/api/ai/editimage?prompt=' + encodeURIComponent(val) + '&url=' + encodeURIComponent(urlVal);
+  }
+  // iqc: 2 input
+  if (id === 'iqc') {
+    var tm = document.getElementById('input-iqc-time');
+    tm = tm ? tm.value.trim() : '';
+    fullUrl = base + '/api/maker/iqc?text=' + encodeURIComponent(val) + (tm ? '&time=' + encodeURIComponent(tm) : '');
+  }
+  // jarak: 2 input (from + to)
+  if (id === 'jarak') {
+    var toEl = document.getElementById('input-jarak-to');
+    var toVal = toEl ? toEl.value.trim() : '';
+    if (!toVal) {
+      if (toEl) { toEl.style.borderColor='var(--ac3)'; setTimeout(function(){ toEl.style.borderColor=''; },900); }
+      if (sb) sb.disabled = false; ld.classList.remove('show'); return;
+    }
+    fullUrl = base + '/api/search/jarak?from=' + encodeURIComponent(val) + '&to=' + encodeURIComponent(toVal);
+  }
+  // detik: action-based, sudah dihandle di event delegation detik-action-btn
+  if (id === 'detik') { if (sb) sb.disabled = false; ld.classList.remove('show'); return; }
+
+  function done() { if (sb) sb.disabled = false; ld.classList.remove('show'); }
+
+  if (BINVIDEO_EPS.indexOf(id) !== -1) {
+    var vid = document.createElement('video');
+    vid.autoplay = vid.loop = vid.muted = vid.playsInline = true;
+    vid.controls = false;
+    vid.style.cssText = 'max-width:160px;max-height:160px;border-radius:12px;display:block;margin:0 auto;object-fit:contain';
+    vid.src = fullUrl;
+    vid.onloadeddata = function(){ vid.play(); box.classList.add('show'); rl.classList.add('show'); done(); };
+    vid.onerror = function(){ box.textContent='Error: Gagal memuat video'; box.classList.add('show','err'); rl.classList.add('show'); done(); };
+    box.appendChild(vid);
+
+  } else if (IMAGE_EPS.indexOf(id) !== -1) {
+    fetch(fullUrl).then(function(r) {
+      var ct = r.headers.get('content-type') || '';
+      if (ct.indexOf('image') !== -1) {
+        var img = document.createElement('img');
+        img.style.cssText = 'max-width:100%;max-height:300px;border-radius:8px;display:block;margin:0 auto';
+        img.src = fullUrl;
+        img.onload = function(){ box.classList.add('show'); rl.classList.add('show'); done(); };
+        img.onerror = function(){ box.textContent='Error: Gagal memuat gambar'; box.classList.add('show','err'); rl.classList.add('show'); done(); };
+        box.appendChild(img);
+      } else {
+        return r.json().then(function(data) {
+          if (data.status && data.result && data.result.image) {
+            var img2 = document.createElement('img');
+            img2.style.cssText = 'max-width:100%;max-height:300px;border-radius:8px;display:block;margin:0 auto';
+            img2.src = data.result.image;
+            img2.onload = function(){ box.classList.add('show'); rl.classList.add('show'); done(); };
+            img2.onerror = function(){ box.textContent='Error: Gagal memuat gambar'; box.classList.add('show','err'); rl.classList.add('show'); done(); };
+            box.appendChild(img2);
+          } else {
+            box.textContent = JSON.stringify(data, null, 2);
+            box.classList.add('show'); if (!data.status) box.classList.add('err');
+            rl.classList.add('show'); done();
+          }
+        });
+      }
+    }).catch(function(e){ box.textContent='Error: '+e.message; box.classList.add('show','err'); rl.classList.add('show'); done(); });
+
+  } else if (VIDEO_EPS.indexOf(id) !== -1) {
+    fetch(fullUrl).then(function(r){ return r.json(); }).then(function(data) {
+      if (data.status && data.result && data.result.url) {
+        var a = document.createElement('a');
+        a.href = data.result.url; a.target = '_blank';
+        a.style.cssText = 'color:#a78bfa;word-break:break-all;font-size:.75rem';
+        a.textContent = '▶ Klik untuk lihat video HD';
+        box.appendChild(a);
+      } else {
+        box.textContent = JSON.stringify(data, null, 2);
+        if (!data.status) box.classList.add('err');
+      }
+      box.classList.add('show'); rl.classList.add('show'); done();
+    }).catch(function(e){ box.textContent='Error: '+e.message; box.classList.add('show','err'); rl.classList.add('show'); done(); });
+
+  } else {
+    fetch(fullUrl).then(function(r){ return r.json(); }).then(function(data) {
+      box.textContent = JSON.stringify(data, null, 2);
+      box.classList.add('show'); if (!data.status) box.classList.add('err');
+      rl.classList.add('show'); done();
+    }).catch(function(e){ box.textContent='Error: '+e.message; box.classList.add('show','err'); rl.classList.add('show'); done(); });
+  }
+}
+
+// ═══════════════════════════════
+// EVENT DELEGATION — semua klik
+// ═══════════════════════════════
+document.addEventListener('click', function(e) {
+
+  // Accordion
+  var hdr = e.target.closest('.cat-header');
+  if (hdr && !e.target.closest('button')) {
+    var card = hdr.closest('.cat-card'), isOpen = card.classList.contains('open');
+    document.querySelectorAll('.cat-card').forEach(function(c){ c.classList.remove('open'); });
+    document.querySelectorAll('.tester').forEach(function(t){ t.classList.remove('open'); });
+    document.querySelectorAll('.btn-try').forEach(function(b){ b.innerHTML='&#9654; Coba'; });
+    if (!isOpen) card.classList.add('open');
+    return;
+  }
+
+  // Docs tabs
+  var tab = e.target.closest('.tab');
+  if (tab) {
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('on'); });
+    document.querySelectorAll('.pane').forEach(function(p){ p.classList.remove('on'); });
+    tab.classList.add('on');
+    var pane = document.getElementById(tab.getAttribute('data-pane'));
+    if (pane) pane.classList.add('on');
+    return;
+  }
+
+  // Copy code block
+  var cpb = e.target.closest('.copy-btn');
+  if (cpb) {
+    var el = document.getElementById(cpb.getAttribute('data-target'));
+    if (el) copyText((el.innerText||el.textContent).trim(), cpb, 'Salin');
+    return;
+  }
+
+  // Copy endpoint URL
+  var cpe = e.target.closest('.btn-copy-ep');
+  if (cpe) {
+    copyText('https://danzz-api.online'+(cpe.getAttribute('data-path')||''), cpe, 'Salin URL');
+    return;
+  }
+
+  // btn-try
+  var tryBtn = e.target.closest('.btn-try');
+  if (tryBtn) {
+    var epCard  = tryBtn.closest('.ep-card');
+    var catCard = tryBtn.closest('.cat-card');
+    var tester  = epCard && epCard.querySelector('.tester');
+    if (!tester) return;
+    var wasOpen = tester.classList.contains('open');
+    document.querySelectorAll('.tester').forEach(function(t){ t.classList.remove('open'); });
+    document.querySelectorAll('.btn-try').forEach(function(b){ b.innerHTML='&#9654; Coba'; });
+    if (!wasOpen) {
+      document.querySelectorAll('.cat-card').forEach(function(c){ c.classList.remove('open'); });
+      if (catCard) catCard.classList.add('open');
+      tester.classList.add('open');
+      tryBtn.textContent = '✕ Tutup';
+      if (tryBtn.classList.contains('btn-try-noparam')) {
+        sendReq(epCard.getAttribute('data-ep-id'));
+      }
+    }
+    return;
+  }
+
+  // btn-send
+  var sendBtn = e.target.closest('.btn-send');
+  if (sendBtn) {
+    var sid = sendBtn.getAttribute('data-id');
+    if (sid) sendReq(sid);
+    return;
+  }
+
+  // detik action buttons
+  var dab = e.target.closest('.detik-action-btn');
+  if (dab) {
+    var action = dab.getAttribute('data-action');
+    // highlight active
+    document.querySelectorAll('.detik-action-btn').forEach(function(b){ b.style.background='rgba(56,189,248,.08)'; b.style.color='#38bdf8'; });
+    dab.style.background = '#38bdf8'; dab.style.color = '#000';
+    // toggle extra fields
+    var exUrl = document.getElementById('detik-extra-url');
+    var exQ   = document.getElementById('detik-extra-q');
+    if (exUrl) exUrl.style.display = (action === 'detail') ? 'block' : 'none';
+    if (exQ)   exQ.style.display   = (action === 'search') ? 'block' : 'none';
+    // build url & fetch
+    var base2 = 'https://danzz-api.online';
+    var dUrl = base2 + '/api/news/detik?action=' + action;
+    if (action === 'detail') {
+      var du = document.getElementById('input-detik-url');
+      if (du && du.value.trim()) dUrl += '&url=' + encodeURIComponent(du.value.trim());
+    }
+    if (action === 'search') {
+      var dq = document.getElementById('input-detik-q');
+      if (dq && dq.value.trim()) dUrl += '&q=' + encodeURIComponent(dq.value.trim());
+      else { if(dq){ dq.style.borderColor='var(--ac3)'; setTimeout(function(){ dq.style.borderColor=''; },900); } return; }
+    }
+    var dbox = document.getElementById('result-detik');
+    var dld  = document.getElementById('loading-detik');
+    var drl  = document.getElementById('rlabel-detik');
+    if (!dbox || !dld || !drl) return;
+    dld.classList.add('show');
+    dbox.classList.remove('show','err'); dbox.innerHTML = '';
+    drl.classList.remove('show');
+    fetch(dUrl).then(function(r){ return r.json(); }).then(function(data){
+      dbox.textContent = JSON.stringify(data, null, 2);
+      dbox.classList.add('show'); if (!data.status) dbox.classList.add('err');
+      drl.classList.add('show'); dld.classList.remove('show');
+    }).catch(function(er){
+      dbox.textContent = 'Error: '+er.message; dbox.classList.add('show','err');
+      drl.classList.add('show'); dld.classList.remove('show');
+    });
+    return;
+  }
+
+  // detik Kirim buttons (search & detail)
+  var dsb = e.target.closest('.detik-send-btn');
+  if (dsb) {
+    var daction = dsb.getAttribute('data-action');
+    var base2 = 'https://danzz-api.online';
+    var dUrl = base2 + '/api/news/detik?action=' + daction;
+    if (daction === 'detail') {
+      var du = document.getElementById('input-detik-url');
+      if (!du || !du.value.trim()) { if(du){ du.style.borderColor='var(--ac3)'; setTimeout(function(){ du.style.borderColor=''; },900); } return; }
+      dUrl += '&url=' + encodeURIComponent(du.value.trim());
+    }
+    if (daction === 'search') {
+      var dq2 = document.getElementById('input-detik-q');
+      if (!dq2 || !dq2.value.trim()) { if(dq2){ dq2.style.borderColor='var(--ac3)'; setTimeout(function(){ dq2.style.borderColor=''; },900); } return; }
+      dUrl += '&q=' + encodeURIComponent(dq2.value.trim());
+    }
+    var dbox2 = document.getElementById('result-detik');
+    var dld2  = document.getElementById('loading-detik');
+    var drl2  = document.getElementById('rlabel-detik');
+    if (!dbox2 || !dld2 || !drl2) return;
+    dld2.classList.add('show');
+    dbox2.classList.remove('show','err'); dbox2.innerHTML = '';
+    drl2.classList.remove('show');
+    fetch(dUrl).then(function(r){ return r.json(); }).then(function(data){
+      dbox2.textContent = JSON.stringify(data, null, 2);
+      dbox2.classList.add('show'); if (!data.status) dbox2.classList.add('err');
+      drl2.classList.add('show'); dld2.classList.remove('show');
+    }).catch(function(er){
+      dbox2.textContent = 'Error: '+er.message; dbox2.classList.add('show','err');
+      drl2.classList.add('show'); dld2.classList.remove('show');
+    });
+    return;
+  }
+});
+
+// Enter di input
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  var inp = e.target.closest('.tester-input');
+  if (!inp) return;
+  // Cari send button di ep-card yang sama supaya id-nya benar (fix multi-param)
+  var epCard = inp.closest('.ep-card');
+  if (!epCard) return;
+  var sb = epCard.querySelector('.btn-send[data-id]');
+  if (sb) {
+    var sid = sb.getAttribute('data-id');
+    if (sid) sendReq(sid);
+  }
+});
+
+// ═══════════════════════════════
+// COPY UTILS
+// ═══════════════════════════════
+function copyText(text, btn, label) {
+  var ok   = function(){ btn.textContent='✓ Disalin!'; setTimeout(function(){ btn.textContent=label; },1400); };
+  var fail = function(){ btn.textContent='✗ Gagal';    setTimeout(function(){ btn.textContent=label; },1400); };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(ok).catch(function(){ fb(text,ok,fail); });
+    } else { fb(text,ok,fail); }
+  } catch(e2){ fb(text,ok,fail); }
+}
+function fb(text,ok,fail) {
+  try {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand('copy') ? ok() : fail();
+    document.body.removeChild(ta);
+  } catch(e3){ fail(); }
+}
+
+// ═══════════════════════════════
+// INIT
+// ═══════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  // Avatar
+  var ava = document.getElementById('ava-owner');
+  if (ava) {
+    var img = new Image();
+    img.alt = 'Danzz';
+    img.onload = function(){ ava.innerHTML = ''; ava.appendChild(img); };
+    img.src = 'https://api.telegram.org/file/bot8601632315:AAHzh8KKi4gyOrpd-a59-0vLJiVSWwFnEZI/documents/file_5';
+  }
+
+  // Animasi counter
+  var el = document.getElementById('reqCount');
+  if (el) {
+    var target=1234, v=0, step=target/(1500/16);
+    var ti = setInterval(function(){
+      v += step;
+      if (v >= target){ el.innerHTML='1,234<span class="ac">+</span>'; clearInterval(ti); return; }
+      el.innerHTML = Math.floor(v).toLocaleString()+'<span class="ac">+</span>';
+    }, 16);
+  }
+
+  // Load endpoint dari server
+  loadEndpoints();
+});
+</script>
+</body>
+</html>
