@@ -28,6 +28,7 @@
     "jimp": "^0.22.12",
     "node-fetch": "^3.3.2",
     "path": "^0.12.7",
+    "playwright": "^1.60.0",
     "puppeteer": "^24.43.1",
     "puppeteer-core": "^24.43.1",
     "qs": "^6.15.2",
