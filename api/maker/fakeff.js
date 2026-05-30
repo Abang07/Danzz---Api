@@ -1,111 +1,122 @@
 const axios = require('axios');
-const Jimp = require('jimp');
-const FormData = require('form-data');
-const fetch = require('node-fetch');
+const { createCanvas, loadImage, registerFont } = require('canvas');
 
+// ============================================
+// TEMPLATE IMAGES
+// ============================================
 const imageUrls = {
-  1:  'https://cloud-fukushima.vercel.app/uploader/8fjhd6ftps.jpg',
-  2:  'https://cloud-fukushima.vercel.app/uploader/oz8hb4ow75.jpg',
-  3:  'https://cloud-fukushima.vercel.app/uploader/tvz1cie8df.jpg',
-  4:  'https://cloud-fukushima.vercel.app/uploader/yo9sg4vmo3.jpg',
-  5:  'https://files.catbox.moe/cuatgd.jpg',
-  6:  'https://files.catbox.moe/kfl1lb.jpg',
-  7:  'https://files.catbox.moe/8vyh2k.jpg',
-  8:  'https://files.catbox.moe/jxzw2r.jpg',
-  9:  'https://files.catbox.moe/mmgua4.jpg',
-  10: 'https://files.catbox.moe/rcgn6z.jpg',
-  11: 'https://files.catbox.moe/v2np8h.jpg'
+    1:  'https://cloud-fukushima.vercel.app/uploader/8fjhd6ftps.jpg',
+    2:  'https://cloud-fukushima.vercel.app/uploader/oz8hb4ow75.jpg',
+    3:  'https://cloud-fukushima.vercel.app/uploader/tvz1cie8df.jpg',
+    4:  'https://cloud-fukushima.vercel.app/uploader/yo9sg4vmo3.jpg',
+    5:  'https://files.catbox.moe/cuatgd.jpg',
+    6:  'https://files.catbox.moe/kfl1lb.jpg',
+    7:  'https://files.catbox.moe/8vyh2k.jpg',
+    8:  'https://files.catbox.moe/jxzw2r.jpg',
+    9:  'https://files.catbox.moe/mmgua4.jpg',
+    10: 'https://files.catbox.moe/rcgn6z.jpg',
+    11: 'https://files.catbox.moe/v2np8h.jpg'
 };
 
 const TOTAL = Object.keys(imageUrls).length;
 
-async function uploader(buffer) {
-  const filename = `danzz-${Date.now()}.jpg`;
-  const form = new FormData();
-  form.append('file', buffer, { filename, contentType: 'image/jpeg' });
+const meta = {
+    param: 'name,template',
+    desc: 'Free Fire Lobby Card Generator',
+    placeholder: 'Kyuu | 1',
+    params: [
+        { name: 'name',     placeholder: 'Kyuu Depeloger' },
+        { name: 'template', placeholder: '1' }
+    ]
+};
 
-  const res = await fetch('https://danzz-uploader.vercel.app/api/upload', {
-    method: 'POST',
-    body: form,
-    headers: form.getHeaders(),
-  });
+// ============================================
+// DRAW TEXT WITH SHADOW (pengganti ffmpeg)
+// ============================================
+function drawTextWithShadow(ctx, text, x, y, fontSize) {
+    ctx.font      = `bold ${fontSize}px TeutonNormal, Arial`;
+    ctx.textAlign = 'center';
 
-  const data = await res.json();
-  return data.url || null;
+    // Shadow
+    ctx.fillStyle   = 'rgba(0,0,0,0.85)';
+    ctx.shadowColor = 'black';
+    ctx.shadowBlur  = 0;
+    for (let ox = -3; ox <= 3; ox++) {
+        for (let oy = -3; oy <= 3; oy++) {
+            if (ox === 0 && oy === 0) continue;
+            ctx.fillText(text, x + ox, y + oy);
+        }
+    }
+
+    // Main text (yellow)
+    ctx.fillStyle   = '#FFD700';
+    ctx.shadowColor = 'transparent';
+    ctx.fillText(text, x, y);
 }
 
 async function handler(req, res) {
-  const { template, name } = req.query;
+    const { name, template } = req.query;
 
-  if (!template || !name) {
-    return res.status(400).json({
-      status: false,
-      message: 'Query ?template= dan ?name= wajib diisi',
-      example: '/api/maker/fakeff?template=1&name=Danzz',
-      total_template: TOTAL
-    });
-  }
-
-  const num = parseInt(template);
-  const imageUrl = imageUrls[num];
-
-  if (!imageUrl) {
-    return res.status(400).json({
-      status: false,
-      message: `Template tidak tersedia. Pilih 1-${TOTAL}`
-    });
-  }
-
-  try {
-    // 1. Download template langsung ke buffer
-    const imgRes = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-    const imgBuffer = Buffer.from(imgRes.data);
-
-    // 2. Baca image dari buffer pakai Jimp
-    const image = await Jimp.create(imgBuffer);
-    const W = image.getWidth();
-    const H = image.getHeight();
-
-    // 3. Load font
-    const nameLen = name.length;
-    let font;
-    if (nameLen <= 6) {
-      font = await Jimp.loadFont(Jimp.FONT_SANS_64_YELLOW);
-    } else if (nameLen <= 10) {
-      font = await Jimp.loadFont(Jimp.FONT_SANS_32_YELLOW);
-    } else {
-      font = await Jimp.loadFont(Jimp.FONT_SANS_16_YELLOW);
+    // VALIDASI
+    if (!name || !template) {
+        return res.status(400).json({
+            status: false,
+            message: 'Query ?name= dan ?template= wajib diisi',
+            example: '/api/maker/fakeff?name=Kyuu&template=1',
+            available_templates: `1 - ${TOTAL}`
+        });
     }
 
-    // 4. Posisi tengah bawah
-    const textWidth  = Jimp.measureText(font, name.toUpperCase());
-    const textHeight = Jimp.measureTextHeight(font, name.toUpperCase(), W);
-    const x = Math.max(0, (W - textWidth) / 2);
-    const y = Math.max(0, H * 0.80 - textHeight / 2);
+    const num = parseInt(template);
+    if (isNaN(num) || num < 1 || num > TOTAL) {
+        return res.status(400).json({
+            status: false,
+            message: `Template tidak valid. Pilih antara 1 - ${TOTAL}`
+        });
+    }
 
-    // 5. Print text
-    image.print(font, x, y, name.toUpperCase());
+    const imageUrl = imageUrls[num];
 
-    // 6. Export ke buffer langsung tanpa tulis file
-    const outputBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+    try {
+        // Load template image
+        const imgRes = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        const img    = await loadImage(Buffer.from(imgRes.data));
 
-    // 7. Upload
-    const resultUrl = await uploader(outputBuffer);
-    if (!resultUrl) return res.status(500).json({ status: false, message: 'Gagal upload gambar' });
+        const W = img.width;
+        const H = img.height;
 
-    res.json({
-      status: true,
-      creator: 'Danzz',
-      data: {
-        name: name.toUpperCase(),
-        template: num,
-        resultUrl
-      }
-    });
+        const canvas = createCanvas(W, H);
+        const ctx    = canvas.getContext('2d');
 
-  } catch (err) {
-    res.status(500).json({ status: false, message: err.message });
-  }
+        // Draw background image
+        ctx.drawImage(img, 0, 0, W, H);
+
+        // Hitung font size dinamis berdasar panjang nama
+        const nameLen  = name.length;
+        const fontSize = nameLen <= 6
+            ? Math.floor(W * 0.055)
+            : nameLen <= 10
+                ? Math.floor(W * 0.045)
+                : Math.floor(W * 0.035);
+
+        // Posisi teks: horizontal center, y = 80% tinggi gambar
+        const x = W / 2 + W * 0.02;
+        const y = H * 0.80;
+
+        drawTextWithShadow(ctx, name.trim().toUpperCase(), x, y, fontSize);
+
+        // Kirim sebagai PNG
+        const buffer = canvas.toBuffer('image/jpeg', { quality: 0.92 });
+        res.setHeader('Content-Type', 'image/jpeg');
+        res.setHeader('Content-Disposition', 'inline; filename="fakeff.jpg"');
+        return res.end(buffer);
+
+    } catch (err) {
+        return res.status(500).json({
+            status: false,
+            message: err.message
+        });
+    }
 }
 
-module.exports = { handler };
+module.exports = { meta, handler };
